@@ -1,9 +1,14 @@
 <?php
+// ============================================================
 // exercicios.php — Endpoint: GET /endpoints/exercicios.php?materia_id=X
 // Retorna todos os exercícios de uma matéria.
 //
 // Parâmetro esperado (query string):
 //   materia_id → ID da matéria (ex: ?materia_id=1)
+//
+// Retorno em caso de sucesso:
+//   dados → [ { id, enunciado, tipo, opcoes_json, correta, codigo }, ... ]
+// ============================================================
 
 require_once __DIR__ . '/../config/Banco.php';
 
@@ -38,6 +43,7 @@ try
         exit;
     }
 
+    // Converte opcoes_json de string para array real, para o Flutter receber já decodificado
     foreach ($exercicios as &$ex)
     {
         if (!empty($ex['opcoes_json']))

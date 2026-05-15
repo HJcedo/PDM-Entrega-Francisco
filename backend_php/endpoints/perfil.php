@@ -1,9 +1,14 @@
 <?php
+// ============================================================
 // perfil.php — Endpoint: GET /endpoints/perfil.php?id=X
 // Retorna os dados públicos de um usuário (sem a senha).
 //
 // Parâmetro esperado (query string):
-//   id → ID do usuário
+//   id → ID do usuário (retornado no login)
+//
+// Retorno em caso de sucesso:
+//   dados → { id, nome, email, avatar }
+// ============================================================
 
 require_once __DIR__ . '/../config/Banco.php';
 

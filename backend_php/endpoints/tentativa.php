@@ -1,9 +1,13 @@
 <?php
+// ============================================================
 // tentativa.php — Endpoint: POST /endpoints/tentativa.php
 // Salva o resultado de um quiz feito pelo usuário.
 //
-// Parâmetros esperados (POST):
-//   usuario_id, materia_id, nota
+// Parâmetros esperados (POST body ou form-data):
+//   usuario_id → ID do usuário (retornado no login)
+//   materia_id → ID da matéria que foi respondida
+//   nota       → nota obtida (0.00 a 10.00)
+// ============================================================
 
 require_once __DIR__ . '/../config/Banco.php';
 
@@ -29,6 +33,7 @@ try
         exit;
     }
 
+    // Garante que a nota fique no intervalo 0–10
     $nota = max(0, min(10, (float)$nota));
 
     $stmt = $banco->conexao->prepare(

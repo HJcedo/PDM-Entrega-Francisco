@@ -1,0 +1,24 @@
+info:
+  name: Atualizar_avatar
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: http://localhost/programec-api/endpoints/atualizar_usuario.php
+  body:
+    type: form-urlencoded
+    data:
+      - name: id
+        value: "1"
+      - name: nome
+        value: Joao Atualizado
+      - name: avatar
+        value: robo
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

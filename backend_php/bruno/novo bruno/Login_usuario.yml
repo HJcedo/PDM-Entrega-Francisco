@@ -1,0 +1,22 @@
+info:
+  name: Login_usuario
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost/programec-api/endpoints/login.php
+  body:
+    type: form-urlencoded
+    data:
+      - name: email
+        value: joao@email.com
+      - name: senha
+        value: "123456"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

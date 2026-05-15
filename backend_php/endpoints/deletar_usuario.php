@@ -1,9 +1,11 @@
 <?php
+// ============================================================
 // deletar_usuario.php — Endpoint: POST /endpoints/deletar_usuario.php
 // Remove um usuário e todas as suas tentativas do banco.
 //
-// Parâmetros esperados (POST):
+// Parâmetros esperados (POST body ou form-data):
 //   id → ID do usuário a ser removido
+// ============================================================
 
 require_once __DIR__ . '/../config/Banco.php';
 
@@ -27,6 +29,7 @@ try
     $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
     $stmt->execute();
 
+    // Verifica se o usuário existe antes de deletar
     $check = $banco->conexao->prepare("SELECT id FROM USUARIO WHERE id = :id");
     $check->bindValue(':id', (int)$id, PDO::PARAM_INT);
     $check->execute();
@@ -38,6 +41,7 @@ try
         exit;
     }
 
+    // Agora remove o usuário
     $stmt = $banco->conexao->prepare(
         "DELETE FROM USUARIO WHERE id = :id"
     );

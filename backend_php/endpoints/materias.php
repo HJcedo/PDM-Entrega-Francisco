@@ -1,6 +1,13 @@
 <?php
+// ============================================================
 // materias.php — Endpoint: GET /endpoints/materias.php
 // Retorna a lista de todas as matérias cadastradas.
+//
+// Sem parâmetros.
+//
+// Retorno em caso de sucesso:
+//   dados → [ { id, nome, icone }, ... ]
+// ============================================================
 
 require_once __DIR__ . '/../config/Banco.php';
 
