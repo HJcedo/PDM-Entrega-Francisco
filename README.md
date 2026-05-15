@@ -57,6 +57,10 @@ PDM-Entrega-Francisco/
 └── README.md
 ```
 
+## Aviso sobre credenciais
+
+> **Projeto acadêmico:** As credenciais de acesso ao banco de dados estão incluídas diretamente no arquivo `backend_php/config/Banco.php` para facilitar a avaliação e os testes pelo professor. Em um projeto de produção, essas informações nunca devem ser versionadas.
+
 ## Como testar localmente
 
 ### Backend (XAMPP)
