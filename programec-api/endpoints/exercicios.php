@@ -26,7 +26,7 @@ try
     }
 
     $stmt = $banco->conexao->prepare(
-        "SELECT id, enunciado, tipo, opcoes_json, correta, codigo
+        "SELECT id, materia_id, enunciado, tipo, opcoes_json, correta, codigo
          FROM EXERCICIO
          WHERE materia_id = :materia_id
          ORDER BY id"

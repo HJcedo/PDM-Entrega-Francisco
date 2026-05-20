@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 import 'exercicio_screen.dart';
 import 'perfil_screen.dart';
+import '../models/materia.dart';
 import '../models/usuario.dart';
-
-// Dados fake — serão substituídos pela API na próxima fase
-const List<Map<String, String>> materias = [
-  {'nome': 'Banco de Dados', 'icone': '🗄️'},
-  {'nome': 'Redes',          'icone': '🌐'},
-  {'nome': 'Linguagem C',    'icone': '💻'},
-  {'nome': 'Algoritmos',     'icone': '🔢'},
-];
+import '../services/api_service.dart';
 
 class HomeScreen extends StatelessWidget {
   final Usuario usuario;
@@ -47,51 +41,78 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1.2,
-                ),
-                itemCount: materias.length,
-                itemBuilder: (context, index) {
-                  final materia = materias[index];
-                  return GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ExercicioScreen(
-                          materia: materia['nome']!,
-                          usuario: usuario,
+              child: FutureBuilder<List<Materia>>(
+                future: ApiService.listarMaterias(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        'Erro ao carregar matérias.\n${snapshot.error}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    );
+                  }
+
+                  final materias = snapshot.data ?? [];
+                  if (materias.isEmpty) {
+                    return const Center(
+                      child: Text('Nenhuma matéria cadastrada.'),
+                    );
+                  }
+
+                  return GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 1.2,
                         ),
-                      ),
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1CB0F6),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            materia['icone']!,
-                            style: const TextStyle(fontSize: 36),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            materia['nome']!,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                    itemCount: materias.length,
+                    itemBuilder: (context, index) {
+                      final materia = materias[index];
+                      return GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ExercicioScreen(
+                              materia: materia,
+                              usuario: usuario,
                             ),
-                            textAlign: TextAlign.center,
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1CB0F6),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                materia.icone ?? '📚',
+                                style: const TextStyle(fontSize: 36),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                materia.nome,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

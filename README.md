@@ -1,117 +1,155 @@
 # Programe.C
 
-Aplicativo mobile educacional de quiz para estudantes de TI, desenvolvido como projeto da disciplina de Programação para Dispositivos Móveis.
+Aplicativo educacional de quiz para estudantes de TI, desenvolvido como trabalho da disciplina de Programacao para Dispositivos Moveis.
 
-## Descrição
-
-O Programe.C permite que estudantes pratiquem conteúdos de TI respondendo exercícios interativos. Após o login, o usuário escolhe uma matéria e responde uma série de questões, recebendo feedback imediato e uma nota ao final.
+O objetivo do projeto e permitir que o aluno faca login, escolha uma materia, responda exercicios e veja sua nota ao final. O app usa Flutter no frontend, PHP puro na API e PostgreSQL/Supabase no banco de dados.
 
 ## Funcionalidades
 
-- Cadastro e login de usuário com senha criptografada (bcrypt)
-- Tela inicial com grade de matérias disponíveis
-- Quiz com 3 tipos de exercícios: múltipla escolha, verdadeiro/falso e completar código
-- Barra de progresso durante o quiz
-- Tela de resultado com nota e número de acertos
-- Tela de perfil com seleção de avatar
-- API REST em PHP comunicando com banco PostgreSQL
+- Cadastro e login de usuario com senha criptografada usando bcrypt.
+- Home com materias carregadas do banco.
+- Quiz com tres tipos de exercicio:
+  - multipla escolha
+  - verdadeiro/falso
+  - completar codigo
+- Resultado com nota e quantidade de acertos.
+- Salvamento da tentativa no banco.
+- Perfil com avatar salvo no banco.
 
-## Tecnologias utilizadas
+## Tecnologias
 
 | Camada | Tecnologia |
-|---|---|
-| Frontend mobile | Flutter (Dart) + Material Design 3 |
-| Backend | PHP puro (sem frameworks) |
-| Banco de dados | PostgreSQL (Supabase) |
-| Comunicação | HTTP REST com JSON |
-| Servidor local | XAMPP |
+| --- | --- |
+| App | Flutter / Dart |
+| API | PHP puro |
+| Banco | PostgreSQL / Supabase |
+| Comunicacao | HTTP REST com JSON |
+| Servidor local | XAMPP / Apache |
 
-## Estrutura do repositório
+## Estrutura
 
-```
+```text
 PDM-Entrega-Francisco/
-│
-├── app_flutter/
-│   └── lib/
-│       ├── main.dart
-│       ├── models/       → Usuario, Materia, Exercicio, Tentativa
-│       ├── screens/      → Login, Cadastro, Home, Exercicio, Resultado, Perfil
-│       └── services/     → ApiService (comunicação com a API)
-│
-├── backend_php/
-│   ├── config/
-│   │   └── Banco.php     → classe de conexão PDO com PostgreSQL
-│   └── endpoints/
-│       ├── cadastro.php
-│       ├── login.php
-│       ├── perfil.php
-│       ├── atualizar_usuario.php
-│       ├── deletar_usuario.php
-│       ├── materias.php
-│       ├── exercicios.php
-│       └── tentativa.php
-│
-├── banco_dados/
-│   └── banco.sql         → CREATE TABLE e INSERTs iniciais
-│
-└── README.md
+|-- app_flutter/
+|   `-- lib/
+|       |-- main.dart
+|       |-- models/
+|       |-- screens/
+|       `-- services/
+|-- programec-api/
+|   |-- config/
+|   |-- endpoints/
+|   `-- bruno/
+|-- banco_dados/
+|   |-- banco.sql
+|   |-- 01_schema.sql
+|   |-- 02_seed_materias.sql
+|   |-- 03_seed_exercicios.sql
+|   |-- 04_seed_usuarios.sql
+|   `-- README.md
+`-- README.md
 ```
 
-## Aviso sobre credenciais
+## Como o app funciona
 
-> **Projeto acadêmico:** As credenciais de acesso ao banco de dados estão incluídas diretamente no arquivo `backend_php/config/Banco.php` para facilitar a avaliação e os testes pelo professor. Em um projeto de produção, essas informações nunca devem ser versionadas.
+1. O Flutter mostra as telas e captura as acoes do usuario.
+2. A classe `ApiService` faz chamadas HTTP para a API PHP.
+3. Os endpoints PHP consultam ou alteram o banco usando PDO.
+4. A API devolve JSON.
+5. O Flutter transforma esse JSON em objetos como `Usuario`, `Materia` e `Exercicio`.
 
-## Como testar localmente
+## Banco de dados
 
-### Backend (XAMPP)
+As tabelas principais sao:
 
-1. Instale o [XAMPP](https://www.apachefriends.org/) e inicie o **Apache**
-2. Copie a pasta `backend_php/` para dentro de `C:\xampp\htdocs\` e renomeie para `programec-api`:
-   ```
-   C:\xampp\htdocs\programec-api\
-   ```
-3. Abra o arquivo `programec-api\config\Banco.php` e preencha as credenciais do seu banco PostgreSQL:
-   ```php
-   $this->User     = "seu_usuario";
-   $this->Password = "sua_senha";
-   $this->Host     = "seu_host";
-   ```
-4. Teste um endpoint no navegador ou no Bruno:
-   ```
-   http://localhost/programec-api/endpoints/materias.php
-   ```
-   Deve retornar um JSON com as matérias cadastradas.
-
-### Banco de dados
-
-Execute o script SQL antes de rodar o app:
-
+```text
+usuario   (id, nome, email, senha, avatar)
+materia   (id, nome, icone)
+exercicio (id, materia_id, enunciado, tipo, opcoes_json, correta, codigo)
+tentativa (id, usuario_id, materia_id, nota, feita_em)
 ```
+
+Para criar e popular o banco, rode o arquivo:
+
+```text
 banco_dados/banco.sql
 ```
 
-Rode no pgAdmin ou psql para criar as tabelas e inserir os dados iniciais.
+Esse script recria as tabelas e insere materias, exercicios e um usuario de teste. Use em ambiente de desenvolvimento/teste.
 
-### App Flutter
+Usuario de teste:
 
-1. Certifique-se de ter o Flutter instalado (`flutter doctor`)
-2. Entre na pasta do app:
-   ```bash
-   cd app_flutter
-   ```
-3. Instale as dependências:
-   ```bash
-   flutter pub get
-   ```
-4. Com o XAMPP rodando, execute o app:
-   ```bash
-   flutter run
-   ```
+```text
+email: aluno@programec.com
+senha: 123456
+```
 
-> O app aponta para `http://localhost/programec-api/endpoints` — definido em `app_flutter/lib/services/api_service.dart`. Se testar em dispositivo físico, substitua `localhost` pelo IP da sua máquina na rede local.
+## Logica de `opcoes_json`
 
-## Informações do banco
+A tabela `exercicio` guarda os tres tipos de questao no mesmo lugar. O campo `tipo` informa como o Flutter deve montar a pergunta.
 
-**LINK:** https://github.com/HJcedo/PDM-Entrega-Francisco  
-**BANCO:** postgres  
-**ESQUEMA:** public
+| tipo | Como funciona |
+| --- | --- |
+| `multipla_escolha` | Usa `opcoes_json` com as alternativas e `correta` com o indice da resposta certa. |
+| `verdadeiro_falso` | Nao usa `opcoes_json`; `correta` guarda `0` para verdadeiro e `1` para falso. |
+| `completar_codigo` | Usa `codigo` com a lacuna `_____` e compara a resposta digitada com `correta`. |
+
+Essa escolha permite usar uma unica tabela para todos os tipos de exercicio.
+
+## Como rodar a API
+
+1. Copie a pasta `programec-api/` para:
+
+```text
+C:\xampp\htdocs\programec-api
+```
+
+2. Inicie o Apache no XAMPP.
+
+3. Teste no navegador:
+
+```text
+http://localhost/programec-api/endpoints/materias.php
+```
+
+Outro teste util:
+
+```text
+http://localhost/programec-api/endpoints/exercicios.php?materia_id=1
+```
+
+## Como rodar o app Flutter
+
+Entre na pasta do app:
+
+```powershell
+cd C:\Users\Acer\PDM-Entrega-Francisco\app_flutter
+```
+
+Instale as dependencias:
+
+```powershell
+flutter pub get
+```
+
+Rode no Windows:
+
+```powershell
+flutter run -d windows
+```
+
+O app aponta para:
+
+```text
+http://localhost/programec-api/endpoints
+```
+
+Essa URL fica em:
+
+```text
+app_flutter/lib/services/api_service.dart
+```
+
+## Observacao sobre credenciais
+
+As credenciais do banco estao no arquivo `programec-api/config/Banco.php` para facilitar a execucao local do projeto. Em um projeto real, essas informacoes deveriam ficar fora do codigo, por exemplo em variaveis de ambiente.

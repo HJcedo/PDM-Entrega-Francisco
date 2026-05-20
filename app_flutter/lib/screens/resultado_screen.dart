@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
+import '../models/materia.dart';
 import '../models/usuario.dart';
 
 class ResultadoScreen extends StatelessWidget {
-  final String materia;
+  final Materia materia;
   final double nota;
   final int acertos;
   final int total;
@@ -43,7 +44,7 @@ class ResultadoScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                materia,
+                materia.nome,
                 style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 32),
@@ -84,7 +85,9 @@ class ResultadoScreen extends StatelessWidget {
                   ),
                   onPressed: () => Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (_) => HomeScreen(usuario: usuario)),
+                    MaterialPageRoute(
+                      builder: (_) => HomeScreen(usuario: usuario),
+                    ),
                     (route) => false,
                   ),
                   child: const Text(

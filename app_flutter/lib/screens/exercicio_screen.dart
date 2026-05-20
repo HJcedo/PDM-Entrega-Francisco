@@ -1,51 +1,43 @@
 import 'package:flutter/material.dart';
 import 'resultado_screen.dart';
+import '../models/exercicio.dart';
+import '../models/materia.dart';
 import '../models/usuario.dart';
-
-// Dados fake — serão substituídos pela API na próxima fase
-const List<Map<String, dynamic>> exercicios = [
-  {
-    'tipo': 'multipla_escolha',
-    'enunciado': 'O que é SQL?',
-    'opcoes': [
-      'Linguagem de consulta estruturada',
-      'Sistema operacional',
-      'Protocolo de rede',
-      'Editor de texto',
-    ],
-    'correta': 0,
-  },
-  {
-    'tipo': 'verdadeiro_falso',
-    'enunciado':
-        'O protocolo UDP garante que os pacotes chegam na ordem correta.',
-    'correta': 1,
-  },
-  {
-    'tipo': 'completar_codigo',
-    'enunciado': 'Complete o comando SQL para buscar todos os registros:',
-    'codigo': 'SELECT _____ FROM usuarios;',
-    'correta': '*',
-  },
-];
+import '../services/api_service.dart';
 
 class ExercicioScreen extends StatefulWidget {
-  final String materia;
+  final Materia materia;
   final Usuario usuario;
-  const ExercicioScreen({super.key, required this.materia, required this.usuario});
+
+  const ExercicioScreen({
+    super.key,
+    required this.materia,
+    required this.usuario,
+  });
 
   @override
   State<ExercicioScreen> createState() => _ExercicioScreenState();
 }
 
 class _ExercicioScreenState extends State<ExercicioScreen> {
+  final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+
+  List<Exercicio> _exercicios = [];
+  bool _carregando = true;
+  String? _erro;
+
   int _atual = 0;
   int _acertos = 0;
   int? _selecionada;
   bool _respondida = false;
+  bool _salvandoTentativa = false;
 
-  final TextEditingController _controller = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
+  @override
+  void initState() {
+    super.initState();
+    _carregarExercicios();
+  }
 
   @override
   void dispose() {
@@ -54,67 +46,163 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
     super.dispose();
   }
 
+  Future<void> _carregarExercicios() async {
+    setState(() {
+      _carregando = true;
+      _erro = null;
+    });
+
+    try {
+      final exercicios = await ApiService.listarExercicios(widget.materia.id);
+      if (!mounted) return;
+      setState(() {
+        _exercicios = exercicios;
+        _carregando = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _erro = e.toString().replaceAll('Exception: ', '');
+        _carregando = false;
+      });
+    }
+  }
+
   void _responder(int index) {
     if (_respondida) return;
+
+    final correta = int.tryParse(_exercicios[_atual].correta);
+
     setState(() {
       _selecionada = index;
       _respondida = true;
-      if (index == exercicios[_atual]['correta']) _acertos++;
+      if (index == correta) _acertos++;
     });
   }
 
   void _responderTexto() {
     if (_respondida) return;
+
     _focusNode.unfocus();
     final digitado = _controller.text.trim().toLowerCase();
-    final correta = (exercicios[_atual]['correta'] as String).toLowerCase();
+    final correta = _exercicios[_atual].correta.trim().toLowerCase();
+
     setState(() {
       _respondida = true;
       if (digitado == correta) _acertos++;
     });
   }
 
-  void _proxima() {
-    if (_atual < exercicios.length - 1) {
+  Future<void> _proxima() async {
+    if (_atual < _exercicios.length - 1) {
       setState(() {
         _atual++;
         _selecionada = null;
         _respondida = false;
         _controller.clear();
       });
-    } else {
-      final nota = (_acertos / exercicios.length) * 10;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ResultadoScreen(
-            materia: widget.materia,
-            nota: nota,
-            acertos: _acertos,
-            total: exercicios.length,
-            usuario: widget.usuario,
-          ),
-        ),
-      );
+      return;
     }
+
+    final nota = (_acertos / _exercicios.length) * 10;
+    setState(() => _salvandoTentativa = true);
+
+    try {
+      final erro = await ApiService.salvarTentativa(
+        widget.usuario.id,
+        widget.materia.id,
+        nota,
+      );
+
+      if (!mounted) return;
+      if (erro != null) {
+        _mostrarErro(erro);
+      }
+    } catch (_) {
+      if (!mounted) return;
+      _mostrarErro('Não foi possível salvar a tentativa.');
+    } finally {
+      if (mounted) {
+        setState(() => _salvandoTentativa = false);
+      }
+    }
+
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ResultadoScreen(
+          materia: widget.materia,
+          nota: nota,
+          acertos: _acertos,
+          total: _exercicios.length,
+          usuario: widget.usuario,
+        ),
+      ),
+    );
+  }
+
+  void _mostrarErro(String mensagem) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensagem), backgroundColor: Colors.red.shade700),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final exercicio = exercicios[_atual];
-    final tipo = exercicio['tipo'] as String;
+    if (_carregando) {
+      return Scaffold(
+        appBar: AppBar(title: Text(widget.materia.nome)),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_erro != null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(widget.materia.nome)),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _erro!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.red),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _carregarExercicios,
+                  child: const Text('Tentar novamente'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_exercicios.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: Text(widget.materia.nome)),
+        body: const Center(
+          child: Text('Nenhum exercício cadastrado para esta matéria.'),
+        ),
+      );
+    }
+
+    final exercicio = _exercicios[_atual];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.materia),
-      ),
+      appBar: AppBar(title: Text(widget.materia.nome)),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             LinearProgressIndicator(
-              value: (_atual + 1) / exercicios.length,
+              value: (_atual + 1) / _exercicios.length,
               backgroundColor: Colors.grey[300],
               color: const Color(0xFF1CB0F6),
               minHeight: 8,
@@ -122,21 +210,18 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Pergunta ${_atual + 1} de ${exercicios.length}',
+              'Pergunta ${_atual + 1} de ${_exercicios.length}',
               style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 24),
             Text(
-              exercicio['enunciado'] as String,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              exercicio.enunciado,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
             Expanded(
               child: SingleChildScrollView(
-                child: _buildAreaResposta(tipo, exercicio),
+                child: _buildAreaResposta(exercicio),
               ),
             ),
             if (_respondida)
@@ -153,16 +238,22 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    onPressed: _proxima,
-                    child: Text(
-                      _atual < exercicios.length - 1
-                          ? 'Próxima'
-                          : 'Ver resultado',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    onPressed: _salvandoTentativa ? null : _proxima,
+                    child: _salvandoTentativa
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(
+                            _atual < _exercicios.length - 1
+                                ? 'Próxima'
+                                : 'Ver resultado',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -172,20 +263,25 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
     );
   }
 
-  Widget _buildAreaResposta(String tipo, Map<String, dynamic> exercicio) {
-    if (tipo == 'multipla_escolha') {
+  Widget _buildAreaResposta(Exercicio exercicio) {
+    if (exercicio.tipo == 'multipla_escolha') {
       return _buildMultiplaEscolha(exercicio);
-    } else if (tipo == 'verdadeiro_falso') {
+    } else if (exercicio.tipo == 'verdadeiro_falso') {
       return _buildVerdadeiroFalso(exercicio);
-    } else if (tipo == 'completar_codigo') {
+    } else if (exercicio.tipo == 'completar_codigo') {
       return _buildCompletarCodigo(exercicio);
     }
-    return const SizedBox.shrink();
+
+    return const Text('Tipo de exercício não reconhecido.');
   }
 
-  Widget _buildMultiplaEscolha(Map<String, dynamic> exercicio) {
-    final opcoes = exercicio['opcoes'] as List<String>;
-    final correta = exercicio['correta'] as int;
+  Widget _buildMultiplaEscolha(Exercicio exercicio) {
+    final opcoes = exercicio.opcoesJson ?? [];
+    final correta = int.tryParse(exercicio.correta);
+
+    if (opcoes.isEmpty) {
+      return const Text('Este exercício não possui opções cadastradas.');
+    }
 
     return Column(
       children: List.generate(opcoes.length, (i) {
@@ -218,8 +314,8 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
     );
   }
 
-  Widget _buildVerdadeiroFalso(Map<String, dynamic> exercicio) {
-    final correta = exercicio['correta'] as int;
+  Widget _buildVerdadeiroFalso(Exercicio exercicio) {
+    final correta = int.tryParse(exercicio.correta);
 
     Color corBotao(int indice) {
       if (!_respondida) return Colors.white;
@@ -282,9 +378,9 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
     );
   }
 
-  Widget _buildCompletarCodigo(Map<String, dynamic> exercicio) {
-    final codigo = exercicio['codigo'] as String;
-    final correta = exercicio['correta'] as String;
+  Widget _buildCompletarCodigo(Exercicio exercicio) {
+    final codigo = exercicio.codigo ?? '';
+    final correta = exercicio.correta;
 
     Color bordaCampo = Colors.grey.shade300;
     if (_respondida) {
@@ -372,40 +468,43 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
         if (_respondida)
           Padding(
             padding: const EdgeInsets.only(top: 16),
-            child: Builder(builder: (context) {
-              final acertou = _controller.text.trim().toLowerCase() ==
-                  correta.toLowerCase();
-              return Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: acertou ? Colors.green.shade50 : Colors.red.shade50,
-                  border: Border.all(
-                    color: acertou ? Colors.green : Colors.red,
-                    width: 1.5,
+            child: Builder(
+              builder: (context) {
+                final acertou =
+                    _controller.text.trim().toLowerCase() ==
+                    correta.toLowerCase();
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: acertou ? Colors.green.shade50 : Colors.red.shade50,
+                    border: Border.all(
+                      color: acertou ? Colors.green : Colors.red,
+                      width: 1.5,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: acertou
-                    ? const Text(
-                        '✅ Correto!',
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                  child: acertou
+                      ? const Text(
+                          '✅ Correto!',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        )
+                      : Text(
+                          '❌ Resposta correta: $correta',
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            fontFamily: 'monospace',
+                          ),
                         ),
-                      )
-                    : Text(
-                        '❌ Resposta correta: $correta',
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                          fontFamily: 'monospace',
-                        ),
-                      ),
-              );
-            }),
+                );
+              },
+            ),
           ),
       ],
     );
