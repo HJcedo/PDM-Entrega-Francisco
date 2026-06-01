@@ -1,6 +1,8 @@
 # Programe.C - API
 
-API REST em PHP puro para o app Programe.C. Ela conecta o Flutter ao banco PostgreSQL/Supabase.
+API REST em PHP puro para o app Programe.C.
+
+Esta branch (`banco-if`) prepara a API para testar o PostgreSQL disponibilizado pelo IF. A branch `main` continua sendo a versao ligada ao Supabase.
 
 ## Estrutura
 
@@ -17,6 +19,8 @@ programec-api/
 |   |-- materias.php
 |   |-- exercicios.php
 |   `-- tentativa.php
+|-- testes/
+|   `-- teste_conexao_if.php
 `-- bruno/
 ```
 
@@ -32,6 +36,7 @@ programec-api/
 | GET | `/endpoints/materias.php` | Lista materias. |
 | GET | `/endpoints/exercicios.php?materia_id=X` | Lista exercicios de uma materia. |
 | POST | `/endpoints/tentativa.php` | Salva resultado do quiz. |
+| GET | `/testes/teste_conexao_if.php` | Testa a conexao com o banco do IF. |
 
 ## Resposta padrao
 
@@ -46,7 +51,20 @@ programec-api/
 
 `NumMens` vale `1` para sucesso e `0` para erro.
 
-## Banco
+## Banco do IF
+
+A conexao padrao desta branch usa:
+
+```text
+host: 192.168.20.17
+porta: 5432
+banco: franciscozanela
+usuario: franciscozanela
+```
+
+Se o teste retornar timeout fora do campus, isso normalmente indica bloqueio de rede/porta, nao erro no codigo PHP.
+
+## Tabelas
 
 Tabelas usadas:
 
@@ -68,6 +86,12 @@ C:\xampp\htdocs\programec-api
 ```
 
 Inicie o Apache e teste:
+
+```text
+http://localhost/programec-api/testes/teste_conexao_if.php
+```
+
+Depois que a conexao estiver funcionando, teste tambem:
 
 ```text
 http://localhost/programec-api/endpoints/materias.php
