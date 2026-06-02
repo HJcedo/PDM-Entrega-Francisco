@@ -56,11 +56,13 @@ programec-api/
 A conexao padrao desta branch usa:
 
 ```text
-host: 192.168.20.17
+host: 192.168.20.18
 porta: 5432
 banco: franciscozanela
 usuario: franciscozanela
 ```
+
+O host `192.168.20.18` foi validado pelo teste simples enviado ao servidor da faculdade.
 
 Se o teste retornar timeout fora do campus, isso normalmente indica bloqueio de rede/porta, nao erro no codigo PHP.
 

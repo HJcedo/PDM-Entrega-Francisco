@@ -42,7 +42,7 @@ class Banco
         $this->Database = is_null($p_Database) ? "franciscozanela" : $p_Database;
         $this->Driver   = is_null($p_Driver)   ? "pgsql"            : $p_Driver;
         $this->Porta    = is_null($p_Porta)    ? "5432"             : $p_Porta;
-        $this->Host     = is_null($p_Host)     ? "192.168.20.17"    : $p_Host;
+        $this->Host     = is_null($p_Host)     ? "192.168.20.18"    : $p_Host;
 
         $this->conexao = null;
         try
