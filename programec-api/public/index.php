@@ -1,13 +1,7 @@
 <?php
 
-// Carrega o helper responsavel por devolver JSON no mesmo formato em toda API.
-require_once __DIR__ . "/../helpers/Response.php";
-
-// Headers basicos da API: resposta em JSON e liberacao para chamadas do Flutter.
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
+// Carrega dependencias globais e headers da API.
+require_once __DIR__ . "/../core/bootstrap.php";
 
 // O navegador pode enviar OPTIONS antes do POST. Aqui respondemos e encerramos.
 if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
@@ -54,12 +48,6 @@ if (!isset($rotas[$chave])) {
 
 // Cada rota informa qual controller e qual metodo devem ser chamados.
 [$classe, $acao] = $rotas[$chave];
-
-$chave = GET /usuarios
-
-rota = "/../routes/usuario_routes.php" 
-
-
 
 // Cria o controller e executa a acao da rota.
 $controller = new $classe();

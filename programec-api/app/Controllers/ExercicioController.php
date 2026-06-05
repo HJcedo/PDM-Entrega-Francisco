@@ -1,8 +1,7 @@
 <?php
 
-require_once __DIR__ . "/../config/Database.php";
-require_once __DIR__ . "/../helpers/Response.php";
-require_once __DIR__ . "/../repositories/ExercicioRepository.php";
+require_once __DIR__ . "/../../core/bootstrap.php";
+require_once __DIR__ . "/../Repositories/ExercicioRepository.php";
 
 class ExercicioController
 {

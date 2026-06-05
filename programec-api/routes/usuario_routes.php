@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . "/../controllers/UsuarioController.php";
+require_once __DIR__ . "/../app/Controllers/UsuarioController.php";
 
 // Rotas relacionadas ao usuario: cadastro, login, perfil e exclusao.
 return [

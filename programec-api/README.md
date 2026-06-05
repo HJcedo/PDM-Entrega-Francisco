@@ -9,22 +9,24 @@ programec-api/
 |-- config/
 |   |-- Banco.php
 |   `-- Database.php
-|-- controllers/
-|   |-- UsuarioController.php
-|   |-- MateriaController.php
-|   |-- ExercicioController.php
-|   `-- TentativaController.php
-|-- repositories/
-|   |-- UsuarioRepository.php
-|   |-- MateriaRepository.php
-|   |-- ExercicioRepository.php
-|   `-- TentativaRepository.php
+|-- app/
+|   |-- Controllers/
+|   |   |-- UsuarioController.php
+|   |   |-- MateriaController.php
+|   |   |-- ExercicioController.php
+|   |   `-- TentativaController.php
+|   `-- Repositories/
+|       |-- UsuarioRepository.php
+|       |-- MateriaRepository.php
+|       |-- ExercicioRepository.php
+|       `-- TentativaRepository.php
 |-- routes/
 |   |-- usuario_routes.php
 |   |-- materia_routes.php
 |   |-- exercicio_routes.php
 |   `-- tentativa_routes.php
-|-- helpers/
+|-- core/
+|   |-- bootstrap.php
 |   `-- Response.php
 |-- public/
 |   |-- index.php
@@ -36,10 +38,12 @@ programec-api/
 ## Fluxo
 
 ```text
-Flutter -> public/index.php -> routes -> controller -> repository -> banco
+Flutter -> public/index.php -> routes -> app/Controllers -> app/Repositories -> banco
 ```
 
 Os arquivos em `endpoints/` foram mantidos como compatibilidade com o app Flutter atual. Eles apenas chamam os controllers da estrutura modular.
+
+O arquivo `core/bootstrap.php` centraliza os `require_once` globais e os headers da API.
 
 ## Rotas Modulares
 
