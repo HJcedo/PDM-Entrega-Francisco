@@ -41,8 +41,7 @@ $chave = $metodo . " " . $caminho;
 
 // Se a chave nao existir no array de rotas, retorna erro 404 em JSON.
 if (!isset($rotas[$chave])) {
-    http_response_code(404);                                                                                                                                                                                                                                                                                                                                                                                                       
-    Response::json(0, "Rota nao encontrada.");
+    Response::json(0, "Rota nao encontrada.", null, 404);
     exit;
 }
 
