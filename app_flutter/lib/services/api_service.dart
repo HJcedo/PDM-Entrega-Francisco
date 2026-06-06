@@ -5,7 +5,7 @@ import '../models/materia.dart';
 import '../models/exercicio.dart';
 
 // URL base da API — trocar pelo IP do servidor da faculdade na fase de migração
-const String _baseUrl = 'http://localhost/programec-api/endpoints';
+const String _baseUrl = 'http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints';
 
 class ApiService {
 

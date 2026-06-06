@@ -86,6 +86,15 @@ O arquivo `core/bootstrap.php` centraliza os `require_once` globais e os headers
 
 ## Banco
 
+Esta branch usa o PostgreSQL do IFsul:
+
+```text
+host: 192.168.20.18
+porta: 5432
+banco: franciscozanela
+usuario: franciscozanela
+```
+
 Tabelas usadas:
 
 ```text
@@ -122,4 +131,10 @@ Ou teste a rota mantida para compatibilidade:
 
 ```text
 http://localhost/programec-api/endpoints/materias.php
+```
+
+Quando a API estiver publicada no servidor do IFsul, o endpoint remoto fica:
+
+```text
+http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints/materias.php
 ```
