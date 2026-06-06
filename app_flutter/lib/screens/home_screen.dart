@@ -1,9 +1,6 @@
-import 'package:flutter/material.dart';
 import 'exercicio_screen.dart';
 import 'perfil_screen.dart';
-import '../models/materia.dart';
-import '../models/usuario.dart';
-import '../services/api_service.dart';
+import '../common/app_imports.dart';
 
 class HomeScreen extends StatelessWidget {
   final Usuario usuario;
@@ -88,7 +85,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1CB0F6),
+                            color: AppColors.primary,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Column(

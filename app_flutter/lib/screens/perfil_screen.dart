@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import '../models/usuario.dart';
-import '../services/api_service.dart';
+import '../common/app_imports.dart';
 
 class PerfilScreen extends StatefulWidget {
   final Usuario usuario;
@@ -11,7 +9,14 @@ class PerfilScreen extends StatefulWidget {
 }
 
 class _PerfilScreenState extends State<PerfilScreen> {
-  final List<String> _avatares = ['🧑‍💻', '👩‍💻', '🤖', '🦊', '🐧', '🎮'];
+  final List<String> _avatares = [
+    '\u{1F9D1}\u{200D}\u{1F4BB}',
+    '\u{1F469}\u{200D}\u{1F4BB}',
+    '\u{1F916}',
+    '\u{1F98A}',
+    '\u{1F427}',
+    '\u{1F3AE}',
+  ];
 
   late Usuario _usuario;
   int _avatarSelecionado = 0;
@@ -40,7 +45,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _carregando = false);
-      _mostrarMensagem('Não foi possível carregar o perfil.', erro: true);
+      AppFeedback.showError(context, 'Nao foi possivel carregar o perfil.');
     }
   }
 
@@ -56,7 +61,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
       if (!mounted) return;
       if (erro != null) {
-        _mostrarMensagem(erro, erro: true);
+        AppFeedback.showError(context, erro);
         return;
       }
 
@@ -68,10 +73,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
           avatar: avatar,
         );
       });
-      _mostrarMensagem('Avatar salvo com sucesso!');
+      AppFeedback.showSuccess(context, 'Avatar salvo com sucesso!');
     } catch (_) {
       if (!mounted) return;
-      _mostrarMensagem('Não foi possível salvar o avatar.', erro: true);
+      AppFeedback.showError(context, 'Nao foi possivel salvar o avatar.');
     } finally {
       if (mounted) setState(() => _salvando = false);
     }
@@ -80,15 +85,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
   void _definirAvatarSelecionado(String? avatar) {
     final indice = _avatares.indexOf(avatar ?? '');
     _avatarSelecionado = indice >= 0 ? indice : 0;
-  }
-
-  void _mostrarMensagem(String mensagem, {bool erro = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensagem),
-        backgroundColor: erro ? Colors.red.shade700 : Colors.green,
-      ),
-    );
   }
 
   @override
@@ -142,7 +138,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           decoration: BoxDecoration(
                             border: Border.all(
                               color: selecionado
-                                  ? const Color(0xFF1CB0F6)
+                                  ? AppColors.primary
                                   : Colors.grey.shade300,
                               width: selecionado ? 3 : 1,
                             ),
@@ -159,32 +155,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     }),
                   ),
                   const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: const Color(0xFF1CB0F6),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: _salvando ? null : _salvarAvatar,
-                      child: _salvando
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text(
-                              'Salvar avatar',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    ),
+                  AppButton(
+                    text: 'Salvar avatar',
+                    isLoading: _salvando,
+                    onPressed: _salvarAvatar,
                   ),
                 ],
               ),
