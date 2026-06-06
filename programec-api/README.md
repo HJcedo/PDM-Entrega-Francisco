@@ -97,6 +97,13 @@ tentativa
 
 Os scripts ficam em `../banco_dados/`.
 
+Usuario de teste:
+
+```text
+email: joao@email.com
+senha: 123456
+```
+
 ## Como Rodar no XAMPP
 
 Copie esta pasta para:

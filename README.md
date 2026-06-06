@@ -80,7 +80,7 @@ Esse script recria as tabelas e insere materias, exercicios e um usuario de test
 Usuario de teste:
 
 ```text
-email: aluno@programec.com
+email: joao@email.com
 senha: 123456
 ```
 
