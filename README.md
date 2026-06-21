@@ -1,45 +1,76 @@
 # Programe.C
 
-Aplicativo educacional de quiz para estudantes de TI, desenvolvido como trabalho da disciplina de Programacao para Dispositivos Moveis.
+Aplicativo educacional de quiz para estudantes de Tecnologia da Informação, desenvolvido como trabalho da disciplina de Programação para Dispositivos Móveis.
 
-O objetivo do projeto e permitir que o aluno faca login, escolha uma materia, responda exercicios e veja sua nota ao final. O app usa Flutter no frontend, PHP puro na API e PostgreSQL no banco de dados do IFsul.
+O aluno pode criar uma conta, entrar no aplicativo, escolher uma matéria, responder exercícios e acompanhar sua nota ao final. O projeto usa Flutter no frontend, PHP puro no backend e PostgreSQL no ambiente do IFsul.
 
 ## Funcionalidades
 
-- Cadastro e login de usuario com senha criptografada usando bcrypt.
-- Home com materias carregadas do banco.
-- Quiz com tres tipos de exercicio:
-  - multipla escolha
-  - verdadeiro/falso
-  - completar codigo
+- Cadastro e login de usuários com senha protegida por bcrypt.
+- Home com matérias carregadas do banco de dados.
+- Sorteio de matéria pelo card **Desafio rápido**.
+- Quiz com três tipos de exercício:
+  - múltipla escolha;
+  - verdadeiro ou falso;
+  - completar código.
+- Correção visual das respostas durante o quiz.
 - Resultado com nota e quantidade de acertos.
-- Salvamento da tentativa no banco.
-- Perfil com avatar salvo no banco.
+- Salvamento das tentativas no banco.
+- Perfil com seleção e atualização de avatar.
+- Logout com retorno seguro à tela de login.
+- Exclusão de conta e das tentativas relacionadas.
 
 ## Tecnologias
 
 | Camada | Tecnologia |
 | --- | --- |
-| App | Flutter / Dart |
-| API | PHP puro |
-| Banco | PostgreSQL / IFsul |
-| Comunicacao | HTTP REST com JSON |
+| Aplicativo | Flutter / Dart / Material Design 3 |
+| API | PHP puro com arquitetura modular |
+| Banco de dados | PostgreSQL do IFsul |
+| Comunicação | HTTP REST com JSON |
 | Servidor local | XAMPP / Apache |
+| Publicação remota | Servidor do IFsul via WinSCP |
 
-## Estrutura
+## Arquitetura
+
+```text
+Flutter
+  -> ApiService
+  -> endpoints PHP de compatibilidade
+  -> Controllers
+  -> Repositories
+  -> PostgreSQL do IFsul
+```
+
+O Flutter ainda consome os arquivos em `programec-api/endpoints/`. Esses arquivos são entradas de compatibilidade e encaminham as requisições para a arquitetura modular do backend.
+
+## Estrutura do repositório
 
 ```text
 PDM-Entrega-Francisco/
 |-- app_flutter/
-|   `-- lib/
-|       |-- main.dart
-|       |-- models/
-|       |-- screens/
-|       `-- services/
+|   |-- lib/
+|   |   |-- common/
+|   |   |   |-- widgets/
+|   |   |   |-- app_colors.dart
+|   |   |   |-- app_feedback.dart
+|   |   |   `-- app_imports.dart
+|   |   |-- models/
+|   |   |-- screens/
+|   |   |-- services/
+|   |   `-- main.dart
+|   `-- README.md
 |-- programec-api/
+|   |-- app/
+|   |   |-- Controllers/
+|   |   `-- Repositories/
 |   |-- config/
+|   |-- core/
 |   |-- endpoints/
-|   `-- bruno/
+|   |-- public/
+|   |-- routes/
+|   |-- teste/
+|   `-- README.md
 |-- banco_dados/
 |   |-- banco.sql
 |   |-- 01_schema.sql
@@ -50,17 +81,9 @@ PDM-Entrega-Francisco/
 `-- README.md
 ```
 
-## Como o app funciona
-
-1. O Flutter mostra as telas e captura as acoes do usuario.
-2. A classe `ApiService` faz chamadas HTTP para a API PHP.
-3. Os endpoints PHP consultam ou alteram o banco usando PDO.
-4. A API devolve JSON.
-5. O Flutter transforma esse JSON em objetos como `Usuario`, `Materia` e `Exercicio`.
-
 ## Banco de dados
 
-As tabelas principais sao:
+O ambiente atual usa exclusivamente o PostgreSQL do IFsul. As tabelas principais são:
 
 ```text
 usuario   (id, nome, email, senha, avatar)
@@ -69,87 +92,88 @@ exercicio (id, materia_id, enunciado, tipo, opcoes_json, correta, codigo)
 tentativa (id, usuario_id, materia_id, nota, feita_em)
 ```
 
-Para criar e popular o banco, rode o arquivo:
+Os scripts SQL de criação e dados iniciais estão em `banco_dados/`.
 
-```text
-banco_dados/banco.sql
-```
+> `banco.sql` apaga e recria as tabelas. Use esse arquivo somente em ambiente de desenvolvimento ou quando a recriação completa for realmente desejada.
 
-Esse script recria as tabelas e insere materias, exercicios e um usuario de teste. Use em ambiente de desenvolvimento/teste.
-
-Usuario de teste:
+Usuário utilizado nos testes do ambiente atual:
 
 ```text
 email: joao@email.com
 senha: 123456
 ```
 
-## Logica de `opcoes_json`
+## Tipos de exercício
 
-A tabela `exercicio` guarda os tres tipos de questao no mesmo lugar. O campo `tipo` informa como o Flutter deve montar a pergunta.
-
-| tipo | Como funciona |
+| Tipo | Armazenamento e correção |
 | --- | --- |
-| `multipla_escolha` | Usa `opcoes_json` com as alternativas e `correta` com o indice da resposta certa. |
-| `verdadeiro_falso` | Nao usa `opcoes_json`; `correta` guarda `0` para verdadeiro e `1` para falso. |
-| `completar_codigo` | Usa `codigo` com a lacuna `_____` e compara a resposta digitada com `correta`. |
+| `multipla_escolha` | `opcoes_json` guarda as alternativas e `correta` guarda o índice certo. |
+| `verdadeiro_falso` | `correta` usa `0` para verdadeiro e `1` para falso. |
+| `completar_codigo` | `codigo` contém a lacuna `_____` e `correta` guarda o texto esperado. |
 
-Essa escolha permite usar uma unica tabela para todos os tipos de exercicio.
+## Executar o aplicativo
 
-## Como rodar a API
+Pré-requisitos:
 
-1. Copie a pasta `programec-api/` para:
-
-```text
-C:\xampp\htdocs\programec-api
-```
-
-2. Inicie o Apache no XAMPP.
-
-3. Teste no navegador:
-
-```text
-http://localhost/programec-api/endpoints/materias.php
-```
-
-Outro teste util:
-
-```text
-http://localhost/programec-api/endpoints/exercicios.php?materia_id=1
-```
-
-## Como rodar o app Flutter
-
-Entre na pasta do app:
+- Flutter SDK;
+- Android Studio e um emulador Android, ou outro dispositivo compatível;
+- acesso à API publicada no IFsul.
 
 ```powershell
-cd C:\Users\Acer\PDM-Entrega-Francisco\app_flutter
-```
-
-Instale as dependencias:
-
-```powershell
+cd C:\Users\macob\PDM-Entrega-Francisco\app_flutter
 flutter pub get
+flutter run
 ```
 
-Rode no Windows:
+Para listar os dispositivos:
 
 ```powershell
-flutter run -d windows
+flutter devices
 ```
 
-O app aponta para a API publicada no servidor do IFsul:
-
-```text
-http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints
-```
-
-Essa URL fica em:
+A URL da API está em:
 
 ```text
 app_flutter/lib/services/api_service.dart
 ```
 
-## Observacao sobre credenciais
+O ambiente atual aponta para:
 
-As credenciais do banco estao no arquivo `programec-api/config/Banco.php` para facilitar a execucao do projeto academico. Em um projeto real, essas informacoes deveriam ficar fora do codigo, por exemplo em variaveis de ambiente.
+```text
+http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints
+```
+
+## Executar a API localmente
+
+Copie `programec-api/` para:
+
+```text
+C:\xampp\htdocs\programec-api
+```
+
+Inicie o Apache e teste:
+
+```text
+http://localhost/programec-api/endpoints/materias.php
+http://localhost/programec-api/public/index.php/materias
+```
+
+A conexão com o PostgreSQL do IFsul depende da disponibilidade da rede do ambiente acadêmico.
+
+## Publicação no IFsul
+
+Os arquivos PHP publicados no servidor do IFsul são atualizados manualmente por meio do WinSCP.
+
+Sempre que houver alteração no backend:
+
+1. identifique os arquivos PHP criados ou modificados;
+2. conecte-se ao servidor pelo WinSCP;
+3. envie os arquivos preservando a mesma estrutura de diretórios;
+4. teste os endpoints remotos;
+5. somente depois valide o fluxo correspondente no Flutter.
+
+Mudanças exclusivamente no Flutter não exigem upload pelo WinSCP.
+
+## Credenciais
+
+As credenciais acadêmicas do PostgreSQL estão em `programec-api/config/Banco.php` para atender ao formato atual do trabalho. Em uma aplicação de produção, essas informações deveriam ser fornecidas por variáveis de ambiente e nunca versionadas no código.

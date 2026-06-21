@@ -1,98 +1,141 @@
-# Programe.C — Flutter App
+# Programe.C — Aplicativo Flutter
 
-App mobile educacional de quiz para estudantes de TI. O aluno escolhe uma matéria, responde exercícios de múltipla escolha, verdadeiro/falso ou completar código, e recebe uma nota ao final.
+Frontend mobile do Programe.C, um aplicativo educacional de quiz para estudantes de Tecnologia da Informação.
 
-> **Backend:** [programe.c API](https://github.com/HJcedo/PDM-PHP) — PHP + PostgreSQL (Supabase)
+O aplicativo consome a API PHP publicada no servidor do IFsul e apresenta login, cadastro, seleção de matérias, exercícios, resultado e gerenciamento do perfil.
 
----
+## Funcionalidades
 
-## Telas
+- Login e cadastro.
+- Home com matérias vindas do PostgreSQL.
+- Identidade visual reutilizável do Programe.C.
+- Card **Desafio rápido** para sortear uma matéria.
+- Exercícios de múltipla escolha, verdadeiro ou falso e completar código.
+- Feedback visual de acerto e erro.
+- Resultado com nota final.
+- Escolha e atualização de avatar.
+- Logout.
+- Exclusão da conta pelo endpoint já existente.
 
-| Tela | Descrição |
-|------|-----------|
-| Login | Autenticação com e-mail e senha |
-| Cadastro | Criação de nova conta |
-| Home | Grid com as matérias disponíveis |
-| Exercício | Quiz com 3 tipos de questão |
-| Resultado | Nota final com acertos/erros |
-| Perfil | Nome, e-mail e escolha de avatar |
+## Estrutura
 
----
-
-## Estrutura do projeto
-
-```
+```text
 lib/
-├── main.dart                  # Entry point e configuração do tema
-├── models/
-│   ├── usuario.dart           # Classe Usuario com fromJson()
-│   ├── materia.dart           # Classe Materia com fromJson()
-│   ├── exercicio.dart         # Classe Exercicio com fromJson()
-│   └── tentativa.dart         # Classe Tentativa com fromJson()
-├── screens/
-│   ├── login_screen.dart
-│   ├── cadastro_screen.dart
-│   ├── home_screen.dart
-│   ├── exercicio_screen.dart
-│   ├── resultado_screen.dart
-│   └── perfil_screen.dart
-└── services/
-    └── api_service.dart       # Todas as chamadas HTTP à API
+|-- common/
+|   |-- widgets/
+|   |   |-- app_button.dart
+|   |   |-- app_logo.dart
+|   |   `-- app_text_field.dart
+|   |-- app_colors.dart
+|   |-- app_feedback.dart
+|   `-- app_imports.dart
+|-- models/
+|   |-- exercicio.dart
+|   |-- materia.dart
+|   |-- tentativa.dart
+|   `-- usuario.dart
+|-- screens/
+|   |-- cadastro_screen.dart
+|   |-- exercicio_screen.dart
+|   |-- home_screen.dart
+|   |-- login_screen.dart
+|   |-- perfil_screen.dart
+|   `-- resultado_screen.dart
+|-- services/
+|   `-- api_service.dart
+`-- main.dart
 ```
 
----
+### Responsabilidades
 
-## Stack
+- `common/`: cores, mensagens e componentes visuais compartilhados.
+- `models/`: conversão dos objetos recebidos em JSON.
+- `screens/`: telas e fluxo de navegação.
+- `services/api_service.dart`: todas as requisições HTTP para a API.
 
-- **Flutter** (Dart) — Material Design 3
-- **Pacote http** — chamadas REST à API
-- Cor primária: `#1CB0F6`
+## Fluxo do aplicativo
 
----
+```text
+Tela Flutter
+  -> ApiService
+  -> endpoint PHP
+  -> resposta JSON
+  -> model Dart
+  -> atualização da interface
+```
 
-## Como rodar
+O aplicativo não mantém uma conexão aberta com o banco. Cada ação faz uma requisição HTTP independente para a API.
 
-### Pré-requisitos
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) instalado
-- Backend da API rodando (ver [programe.c API](https://github.com/HJcedo/PDM-PHP))
+## API utilizada
 
-### Passos
+A URL atual está definida em `lib/services/api_service.dart`:
 
-```bash
-# 1. Clone o repositório
-git clone https://github.com/HJcedo/PDM-Flutter.git
-cd programec-flutter
+```dart
+const String _baseUrl =
+    'http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints';
+```
 
-# 2. Instale as dependências
+Endpoints consumidos:
+
+| Método | Endpoint | Uso |
+| --- | --- | --- |
+| POST | `cadastro.php` | Criar conta. |
+| POST | `login.php` | Autenticar usuário. |
+| GET | `perfil.php?id=X` | Carregar perfil. |
+| POST | `atualizar_usuario.php` | Atualizar nome ou avatar. |
+| POST | `deletar_usuario.php` | Excluir conta e tentativas. |
+| GET | `materias.php` | Listar matérias. |
+| GET | `exercicios.php?materia_id=X` | Listar exercícios. |
+| POST | `tentativa.php` | Salvar resultado. |
+
+O logout é local: o aplicativo remove as rotas anteriores e retorna para a tela de login.
+
+## Executar
+
+Pré-requisitos:
+
+- Flutter SDK;
+- Android Studio com Android SDK;
+- emulador Android ou dispositivo físico;
+- API do IFsul disponível.
+
+```powershell
+cd C:\Users\macob\PDM-Entrega-Francisco\app_flutter
 flutter pub get
-
-# 3. Configure a URL da API em lib/services/api_service.dart
-# Altere a constante _baseUrl para o endereço do seu servidor
-
-# 4. Rode o app
+flutter doctor
+flutter devices
 flutter run
 ```
 
-### Configurar a URL da API
+Para executar em um dispositivo específico:
 
-Abra `lib/services/api_service.dart` e altere a linha:
-
-```dart
-const String _baseUrl = 'http://localhost/programec-api/endpoints';
+```powershell
+flutter run -d ID_DO_DISPOSITIVO
 ```
 
-| Ambiente | URL |
-|----------|-----|
-| Localhost (XAMPP) | `http://localhost/programec-api/endpoints` |
-| Emulador Android | `http://10.0.2.2/programec-api/endpoints` |
-| Servidor da faculdade | `http://<IP-do-servidor>/endpoints` |
+## Hot reload e dados remotos
 
----
+O hot reload preserva o estado atual dos widgets. Alterações feitas diretamente no banco, como trocar o ícone de uma matéria, podem exigir:
 
-## Tipos de questão
+- hot restart (`R` no terminal);
+- sair e entrar novamente na tela;
+- fechar e abrir o aplicativo.
 
-| Tipo | Como funciona |
-|------|---------------|
-| `multipla_escolha` | 4 opções clicáveis — verde/vermelho após responder |
-| `verdadeiro_falso` | 2 botões grandes lado a lado |
-| `completar_codigo` | Bloco de código com lacuna + campo de digitação livre |
+## Validação
+
+Execute:
+
+```powershell
+flutter analyze
+```
+
+## Stack visual
+
+- Flutter e Dart.
+- Material Design 3.
+- Cor principal: `#1CB0F6`.
+- Componentes compartilhados para botões, campos e logotipo.
+
+## Observação sobre o backend
+
+Mudanças no Flutter não exigem WinSCP. Caso um novo recurso dependa de alteração ou criação de endpoint PHP, os arquivos correspondentes precisam ser enviados manualmente ao servidor do IFsul antes do teste no aplicativo.
