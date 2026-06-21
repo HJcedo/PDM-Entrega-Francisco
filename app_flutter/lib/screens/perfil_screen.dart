@@ -1,3 +1,4 @@
+import 'login_screen.dart';
 import '../common/app_imports.dart';
 
 class PerfilScreen extends StatefulWidget {
@@ -22,6 +23,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   int _avatarSelecionado = 0;
   bool _carregando = true;
   bool _salvando = false;
+  bool _excluindo = false;
 
   @override
   void initState() {
@@ -45,7 +47,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _carregando = false);
-      AppFeedback.showError(context, 'Nao foi possivel carregar o perfil.');
+      AppFeedback.showError(context, 'Não foi possível carregar o perfil.');
     }
   }
 
@@ -76,7 +78,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
       AppFeedback.showSuccess(context, 'Avatar salvo com sucesso!');
     } catch (_) {
       if (!mounted) return;
-      AppFeedback.showError(context, 'Nao foi possivel salvar o avatar.');
+      AppFeedback.showError(context, 'Não foi possível salvar o avatar.');
     } finally {
       if (mounted) setState(() => _salvando = false);
     }
@@ -87,14 +89,98 @@ class _PerfilScreenState extends State<PerfilScreen> {
     _avatarSelecionado = indice >= 0 ? indice : 0;
   }
 
+  void _voltarParaLogin() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
+  Future<void> _confirmarLogout() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(Icons.logout_rounded, color: AppColors.primary),
+        title: const Text('Sair da conta?'),
+        content: const Text(
+          'Você voltará para a tela de login.',
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true && mounted) {
+      _voltarParaLogin();
+    }
+  }
+
+  Future<void> _confirmarExclusao() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(Icons.delete_forever_rounded, color: Colors.red),
+        title: const Text('Excluir sua conta?'),
+        content: const Text(
+          'Esta ação é permanente. Seu perfil e suas tentativas serão '
+          'removidos e não poderão ser recuperados.',
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Excluir conta'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar != true || !mounted) return;
+
+    setState(() => _excluindo = true);
+    try {
+      final erro = await ApiService.deletarUsuario(_usuario.id);
+      if (!mounted) return;
+
+      if (erro != null) {
+        AppFeedback.showError(context, erro);
+        return;
+      }
+
+      _voltarParaLogin();
+    } catch (_) {
+      if (!mounted) return;
+      AppFeedback.showError(
+        context,
+        'Não foi possível excluir a conta. Tente novamente.',
+      );
+    } finally {
+      if (mounted) setState(() => _excluindo = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Meu Perfil')),
       body: _carregando
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(24),
+          : SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
               child: Column(
                 children: [
                   Text(
@@ -158,7 +244,64 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   AppButton(
                     text: 'Salvar avatar',
                     isLoading: _salvando,
-                    onPressed: _salvarAvatar,
+                    onPressed: _excluindo ? null : _salvarAvatar,
+                  ),
+                  const SizedBox(height: 30),
+                  const Divider(),
+                  const SizedBox(height: 14),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Conta',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _excluindo ? null : _confirmarLogout,
+                      icon: const Icon(Icons.logout_rounded),
+                      label: const Text('Sair da conta'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        foregroundColor: const Color(0xFF4B5568),
+                        side: const BorderSide(color: Color(0xFFD8DEE8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton.icon(
+                      onPressed: _excluindo ? null : _confirmarExclusao,
+                      icon: _excluindo
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.red,
+                              ),
+                            )
+                          : const Icon(Icons.delete_outline_rounded),
+                      label: Text(
+                        _excluindo ? 'Excluindo conta...' : 'Excluir conta',
+                      ),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        foregroundColor: Colors.red.shade700,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),

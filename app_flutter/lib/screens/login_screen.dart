@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final senha = _senhaController.text.trim();
 
     if (email.isEmpty || senha.isEmpty) {
-      AppFeedback.showError(context, 'Preencha e-mail e senha.');
+      AppFeedback.showError(context, 'Preencha o e-mail e a senha.');
       return;
     }
 
@@ -42,7 +42,10 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      AppFeedback.showError(context, e.toString().replaceAll('Exception: ', ''));
+      AppFeedback.showError(
+        context,
+        e.toString().replaceAll('Exception: ', ''),
+      );
     } finally {
       if (mounted) setState(() => _carregando = false);
     }
@@ -58,14 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                'Programe.C',
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
+              const AppLogo(),
               const SizedBox(height: 8),
               const Text(
                 'Aprenda TI de forma divertida',
@@ -74,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 48),
               AppTextField(
                 controller: _emailController,
-                label: 'Email',
+                label: 'E-mail',
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),
@@ -91,15 +87,37 @@ class _LoginScreenState extends State<LoginScreen> {
                 foregroundColor: AppColors.primary,
                 onPressed: _entrar,
               ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CadastroScreen()),
+              const SizedBox(height: 24),
+              const Text(
+                'Ainda não tem uma conta?',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
                 ),
-                child: const Text(
-                  'Nao tem conta? Cadastre-se',
-                  style: TextStyle(color: Colors.white),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.white.withValues(alpha: 0.12),
+                    side: const BorderSide(color: Colors.white, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CadastroScreen()),
+                  ),
+                  icon: const Icon(Icons.person_add_alt_1_rounded, size: 20),
+                  label: const Text(
+                    'Criar minha conta',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ],

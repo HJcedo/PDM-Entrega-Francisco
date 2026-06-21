@@ -7,4 +7,5 @@ export '../services/api_service.dart';
 export 'app_colors.dart';
 export 'app_feedback.dart';
 export 'widgets/app_button.dart';
+export 'widgets/app_logo.dart';
 export 'widgets/app_text_field.dart';
