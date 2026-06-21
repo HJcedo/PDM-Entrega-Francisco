@@ -17,6 +17,14 @@ O aplicativo consome a API PHP publicada no servidor do IFsul e apresenta login,
 - Logout.
 - Exclusão da conta pelo endpoint já existente.
 
+## Diagrama de casos de uso
+
+O diagrama resume as ações disponíveis no aplicativo e as relações adotadas entre elas.
+
+![Diagrama de casos de uso do Programe.C](../docs/diagramas/diagrama-casos-de-uso.png)
+
+[Abrir o diagrama de casos de uso em PDF](../docs/diagramas/diagrama-casos-de-uso.pdf)
+
 ## Estrutura
 
 ```text

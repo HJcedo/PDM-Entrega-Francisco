@@ -44,6 +44,24 @@ Flutter
 
 O Flutter ainda consome os arquivos em `programec-api/endpoints/`. Esses arquivos são entradas de compatibilidade e encaminham as requisições para a arquitetura modular do backend.
 
+## Diagramas
+
+### Casos de uso
+
+O diagrama apresenta as ações disponíveis ao usuário e as relações de inclusão e extensão adotadas no trabalho.
+
+![Diagrama de casos de uso do Programe.C](docs/diagramas/diagrama-casos-de-uso.png)
+
+[Abrir o diagrama de casos de uso em PDF](docs/diagramas/diagrama-casos-de-uso.pdf)
+
+### Entidade-relacionamento
+
+O diagrama representa as tabelas `usuario`, `materia`, `exercicio` e `tentativa`, seus campos e relacionamentos.
+
+![Diagrama entidade-relacionamento do Programe.C](docs/diagramas/diagrama-entidade-relacionamento.png)
+
+[Abrir o diagrama entidade-relacionamento em PDF](docs/diagramas/diagrama-entidade-relacionamento.pdf)
+
 ## Estrutura do repositório
 
 ```text

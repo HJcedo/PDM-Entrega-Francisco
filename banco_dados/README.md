@@ -4,6 +4,14 @@ Scripts PostgreSQL usados para criar e popular as tabelas do Programe.C.
 
 O ambiente atual usa o banco interno do IFsul. O projeto não depende mais do Supabase.
 
+## Diagrama entidade-relacionamento
+
+O diagrama mostra as quatro tabelas do projeto, seus campos e relacionamentos.
+
+![Diagrama entidade-relacionamento do Programe.C](../docs/diagramas/diagrama-entidade-relacionamento.png)
+
+[Abrir o diagrama entidade-relacionamento em PDF](../docs/diagramas/diagrama-entidade-relacionamento.pdf)
+
 ## Arquivos
 
 | Arquivo | Função |

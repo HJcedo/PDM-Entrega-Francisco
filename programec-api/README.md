@@ -14,6 +14,23 @@ Requisição HTTP
   -> Response JSON
 ```
 
+```mermaid
+flowchart LR
+    FLUTTER["Flutter / ApiService"]
+    ENDPOINTS["Endpoints de compatibilidade"]
+    ROUTES["Rotas modulares"]
+    CONTROLLERS["Controllers"]
+    REPOSITORIES["Repositories"]
+    POSTGRES[("PostgreSQL do IFsul")]
+
+    FLUTTER --> ENDPOINTS
+    FLUTTER -. "rotas alternativas" .-> ROUTES
+    ENDPOINTS --> CONTROLLERS
+    ROUTES --> CONTROLLERS
+    CONTROLLERS --> REPOSITORIES
+    REPOSITORIES --> POSTGRES
+```
+
 ## Estrutura
 
 ```text
