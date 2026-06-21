@@ -1,8 +1,6 @@
-import 'package:flutter/material.dart';
 import 'cadastro_screen.dart';
 import 'home_screen.dart';
-import '../services/api_service.dart';
-import '../models/usuario.dart';
+import '../common/app_imports.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,11 +10,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Controladores leem o texto digitado em cada campo
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
-
-  // Controla o indicador de carregamento enquanto aguarda a API
   bool _carregando = false;
 
   @override
@@ -31,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final senha = _senhaController.text.trim();
 
     if (email.isEmpty || senha.isEmpty) {
-      _mostrarErro('Preencha e-mail e senha.');
+      AppFeedback.showError(context, 'Preencha o e-mail e a senha.');
       return;
     }
 
@@ -41,118 +36,93 @@ class _LoginScreenState extends State<LoginScreen> {
       final Usuario usuario = await ApiService.login(email, senha);
 
       if (!mounted) return;
-
-      // Login bem-sucedido — navega para a Home passando o usuário logado
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => HomeScreen(usuario: usuario)),
       );
     } catch (e) {
       if (!mounted) return;
-      _mostrarErro(e.toString().replaceAll('Exception: ', ''));
+      AppFeedback.showError(
+        context,
+        e.toString().replaceAll('Exception: ', ''),
+      );
     } finally {
       if (mounted) setState(() => _carregando = false);
     }
   }
 
-  void _mostrarErro(String mensagem) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensagem),
-        backgroundColor: Colors.red.shade700,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1CB0F6),
+      backgroundColor: AppColors.primary,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                'Programe.C',
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
+              const AppLogo(),
               const SizedBox(height: 8),
               const Text(
                 'Aprenda TI de forma divertida',
                 style: TextStyle(color: Colors.white70, fontSize: 16),
               ),
               const SizedBox(height: 48),
-              TextField(
+              AppTextField(
                 controller: _emailController,
+                label: 'E-mail',
                 keyboardType: TextInputType.emailAddress,
-                decoration: _inputDecoration('Email'),
               ),
               const SizedBox(height: 16),
-              TextField(
+              AppTextField(
                 controller: _senhaController,
+                label: 'Senha',
                 obscureText: true,
-                decoration: _inputDecoration('Senha'),
               ),
               const SizedBox(height: 24),
+              AppButton(
+                text: 'Entrar',
+                isLoading: _carregando,
+                backgroundColor: Colors.white,
+                foregroundColor: AppColors.primary,
+                onPressed: _entrar,
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Ainda não tem uma conta?',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF1CB0F6),
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.white.withValues(alpha: 0.12),
+                    side: const BorderSide(color: Colors.white, width: 1.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  // Desabilita o botão enquanto carrega
-                  onPressed: _carregando ? null : _entrar,
-                  child: _carregando
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text(
-                          'Entrar',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CadastroScreen()),
-                ),
-                child: const Text(
-                  'Não tem conta? Cadastre-se',
-                  style: TextStyle(color: Colors.white),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const CadastroScreen()),
+                  ),
+                  icon: const Icon(Icons.person_add_alt_1_rounded, size: 20),
+                  label: const Text(
+                    'Criar minha conta',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: Colors.white70),
-      filled: true,
-      fillColor: Colors.white24,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
       ),
     );
   }

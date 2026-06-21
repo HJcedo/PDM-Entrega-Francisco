@@ -5,13 +5,17 @@ import '../models/materia.dart';
 import '../models/exercicio.dart';
 
 // URL base da API — trocar pelo IP do servidor da faculdade na fase de migração
-const String _baseUrl = 'http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints';
+const String _baseUrl =
+    'http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints';
 
 class ApiService {
-
   // ── Cadastrar novo usuário ──────────────────────────────────────────────────
   // Retorna null em caso de sucesso, ou uma mensagem de erro
-  static Future<String?> cadastrar(String nome, String email, String senha) async {
+  static Future<String?> cadastrar(
+    String nome,
+    String email,
+    String senha,
+  ) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/cadastro.php'),
       body: {'nome': nome, 'email': email, 'senha': senha},
@@ -35,16 +39,18 @@ class ApiService {
 
   // ── Buscar perfil ──────────────────────────────────────────────────────────
   static Future<Usuario> buscarPerfil(int id) async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/perfil.php?id=$id'),
-    );
+    final response = await http.get(Uri.parse('$_baseUrl/perfil.php?id=$id'));
     final json = jsonDecode(response.body);
     if (json['NumMens'] == 1) return Usuario.fromJson(json['dados']);
     throw Exception(json['Mensagem']);
   }
 
   // ── Atualizar nome e/ou avatar ─────────────────────────────────────────────
-  static Future<String?> atualizarUsuario(int id, {String? nome, String? avatar}) async {
+  static Future<String?> atualizarUsuario(
+    int id, {
+    String? nome,
+    String? avatar,
+  }) async {
     final body = <String, String>{'id': id.toString()};
     if (nome != null) body['nome'] = nome;
     if (avatar != null) body['avatar'] = avatar;
@@ -52,6 +58,17 @@ class ApiService {
     final response = await http.post(
       Uri.parse('$_baseUrl/atualizar_usuario.php'),
       body: body,
+    );
+    final json = jsonDecode(response.body);
+    if (json['NumMens'] == 1) return null;
+    return json['Mensagem'];
+  }
+
+  // Exclui o usuário usando o endpoint já existente no servidor.
+  static Future<String?> deletarUsuario(int id) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/deletar_usuario.php'),
+      body: {'id': id.toString()},
     );
     final json = jsonDecode(response.body);
     if (json['NumMens'] == 1) return null;
@@ -81,7 +98,11 @@ class ApiService {
   }
 
   // ── Salvar resultado do quiz ───────────────────────────────────────────────
-  static Future<String?> salvarTentativa(int usuarioId, int materiaId, double nota) async {
+  static Future<String?> salvarTentativa(
+    int usuarioId,
+    int materiaId,
+    double nota,
+  ) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/tentativa.php'),
       body: {

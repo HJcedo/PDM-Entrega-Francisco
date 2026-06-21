@@ -1,9 +1,5 @@
-import 'package:flutter/material.dart';
 import 'resultado_screen.dart';
-import '../models/exercicio.dart';
-import '../models/materia.dart';
-import '../models/usuario.dart';
-import '../services/api_service.dart';
+import '../common/app_imports.dart';
 
 class ExercicioScreen extends StatefulWidget {
   final Materia materia;
@@ -143,9 +139,7 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
   }
 
   void _mostrarErro(String mensagem) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensagem), backgroundColor: Colors.red.shade700),
-    );
+    AppFeedback.showError(context, mensagem);
   }
 
   @override
@@ -204,7 +198,7 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
             LinearProgressIndicator(
               value: (_atual + 1) / _exercicios.length,
               backgroundColor: Colors.grey[300],
-              color: const Color(0xFF1CB0F6),
+              color: AppColors.primary,
               minHeight: 8,
               borderRadius: BorderRadius.circular(4),
             ),
@@ -227,34 +221,12 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
             if (_respondida)
               Padding(
                 padding: const EdgeInsets.only(top: 16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: const Color(0xFF1CB0F6),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: _salvandoTentativa ? null : _proxima,
-                    child: _salvandoTentativa
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(
-                            _atual < _exercicios.length - 1
-                                ? 'Próxima'
-                                : 'Ver resultado',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                  ),
+                child: AppButton(
+                  text: _atual < _exercicios.length - 1
+                      ? 'Proxima'
+                      : 'Ver resultado',
+                  isLoading: _salvandoTentativa,
+                  onPressed: _proxima,
                 ),
               ),
           ],
@@ -434,7 +406,7 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF1CB0F6), width: 2),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
             ),
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -446,23 +418,9 @@ class _ExercicioScreenState extends State<ExercicioScreen> {
         if (!_respondida)
           Padding(
             padding: const EdgeInsets.only(top: 12),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: const Color(0xFF1CB0F6),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: _responderTexto,
-                child: const Text(
-                  'Confirmar',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
+            child: AppButton(
+              text: 'Confirmar',
+              onPressed: _responderTexto,
             ),
           ),
         if (_respondida)

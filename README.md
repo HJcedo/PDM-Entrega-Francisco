@@ -2,7 +2,7 @@
 
 Aplicativo educacional de quiz para estudantes de TI, desenvolvido como trabalho da disciplina de Programacao para Dispositivos Moveis.
 
-O objetivo do projeto e permitir que o aluno faca login, escolha uma materia, responda exercicios e veja sua nota ao final. O app usa Flutter no frontend, PHP puro na API e PostgreSQL/Supabase no banco de dados.
+O objetivo do projeto e permitir que o aluno faca login, escolha uma materia, responda exercicios e veja sua nota ao final. O app usa Flutter no frontend, PHP puro na API e PostgreSQL no banco de dados do IFsul.
 
 ## Funcionalidades
 
@@ -22,7 +22,7 @@ O objetivo do projeto e permitir que o aluno faca login, escolha uma materia, re
 | --- | --- |
 | App | Flutter / Dart |
 | API | PHP puro |
-| Banco | PostgreSQL / Supabase |
+| Banco | PostgreSQL / IFsul |
 | Comunicacao | HTTP REST com JSON |
 | Servidor local | XAMPP / Apache |
 
@@ -80,7 +80,7 @@ Esse script recria as tabelas e insere materias, exercicios e um usuario de test
 Usuario de teste:
 
 ```text
-email: aluno@programec.com
+email: joao@email.com
 senha: 123456
 ```
 
@@ -138,10 +138,10 @@ Rode no Windows:
 flutter run -d windows
 ```
 
-O app aponta para:
+O app aponta para a API publicada no servidor do IFsul:
 
 ```text
-http://localhost/programec-api/endpoints
+http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints
 ```
 
 Essa URL fica em:
@@ -152,4 +152,4 @@ app_flutter/lib/services/api_service.dart
 
 ## Observacao sobre credenciais
 
-As credenciais do banco estao no arquivo `programec-api/config/Banco.php` para facilitar a execucao local do projeto. Em um projeto real, essas informacoes deveriam ficar fora do codigo, por exemplo em variaveis de ambiente.
+As credenciais do banco estao no arquivo `programec-api/config/Banco.php` para facilitar a execucao do projeto academico. Em um projeto real, essas informacoes deveriam ficar fora do codigo, por exemplo em variaveis de ambiente.
