@@ -5,16 +5,15 @@ info:
 
 http:
   method: POST
-  url: http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints/cadastro.php
+  url: http://200.19.1.19/20222GR.ADS0005/programec-api/public/usuarios
   body:
-    type: form-urlencoded
-    data:
-      - name: nome
-        value: Joao da Silva
-      - name: email
-        value: joao@email.com
-      - name: senha
-        value: "123456"
+    type: json
+    data: |-
+      {
+        "nome": "João da Silva",
+        "email": "joao@email.com",
+        "senha": "123456"
+      }
   auth: inherit
 
 settings:

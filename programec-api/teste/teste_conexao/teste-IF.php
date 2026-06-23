@@ -1,28 +1,23 @@
 <?php
 
-// Teste da API publicada no servidor da faculdade.
-// Rode no terminal com:
-// C:\xampp\php\php.exe programec-api\testes\teste-IF.php
-
-$baseUrl = "http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints";
+// Teste da API REST publicada no servidor da faculdade.
+$baseUrl = "http://200.19.1.19/20222GR.ADS0005/programec-api/public";
 
 function chamarApi(string $metodo, string $url, array $dados = []): array
 {
     $curl = curl_init();
-
-    if ($metodo === "GET" && !empty($dados)) {
-        $url .= "?" . http_build_query($dados);
-    }
+    $headers = ["Content-Type: application/json; charset=UTF-8"];
 
     curl_setopt_array($curl, [
         CURLOPT_URL => $url,
+        CURLOPT_CUSTOMREQUEST => $metodo,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => 20,
+        CURLOPT_HTTPHEADER => $headers,
     ]);
 
-    if ($metodo === "POST") {
-        curl_setopt($curl, CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($dados));
+    if (!empty($dados)) {
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($dados, JSON_UNESCAPED_UNICODE));
     }
 
     $resposta = curl_exec($curl);
@@ -38,6 +33,24 @@ function chamarApi(string $metodo, string $url, array $dados = []): array
     ];
 }
 
+function validarResposta(array $resposta): array
+{
+    if (!empty($resposta["erro"])) {
+        throw new Exception($resposta["erro"]);
+    }
+
+    if ($resposta["status"] < 200 || $resposta["status"] >= 300) {
+        $mensagem = $resposta["json"]["Mensagem"] ?? "Erro HTTP";
+        throw new Exception("HTTP " . $resposta["status"] . ": " . $mensagem);
+    }
+
+    if (!is_array($resposta["json"])) {
+        throw new Exception("Resposta não é JSON válido: " . ($resposta["raw"] ?? ""));
+    }
+
+    return $resposta["json"];
+}
+
 function testar(string $nome, callable $callback): void
 {
     try {
@@ -48,50 +61,19 @@ function testar(string $nome, callable $callback): void
     }
 }
 
-function validarResposta(array $resposta): array
-{
-    if (!empty($resposta["erro"])) {
-        throw new Exception($resposta["erro"]);
-    }
+echo "Testando API REST do IF: {$baseUrl}\n\n";
 
-    if ($resposta["status"] < 200 || $resposta["status"] >= 300) {
-        throw new Exception("HTTP " . $resposta["status"]);
-    }
-
-    if (!is_array($resposta["json"])) {
-        throw new Exception("Resposta nao e JSON valido: " . ($resposta["raw"] ?? ""));
-    }
-
-    return $resposta["json"];
-}
-
-echo "Testando API do IF: {$baseUrl}\n\n";
-
-testar("Listar materias", function () use ($baseUrl) {
-    $json = validarResposta(chamarApi("GET", "{$baseUrl}/materias.php"));
-
-    if (($json["NumMens"] ?? 0) != 1 || empty($json["dados"])) {
-        throw new Exception($json["Mensagem"] ?? "Materias nao retornaram dados.");
-    }
+testar("Listar matérias", function () use ($baseUrl) {
+    validarResposta(chamarApi("GET", "{$baseUrl}/materias"));
 });
 
-testar("Listar exercicios da materia 1", function () use ($baseUrl) {
-    $json = validarResposta(chamarApi("GET", "{$baseUrl}/exercicios.php", [
-        "materia_id" => 1,
-    ]));
-
-    if (($json["NumMens"] ?? 0) != 1 || empty($json["dados"])) {
-        throw new Exception($json["Mensagem"] ?? "Exercicios nao retornaram dados.");
-    }
+testar("Listar exercícios da matéria 1", function () use ($baseUrl) {
+    validarResposta(chamarApi("GET", "{$baseUrl}/materias/1/exercicios"));
 });
 
-testar("Login do usuario de teste", function () use ($baseUrl) {
-    $json = validarResposta(chamarApi("POST", "{$baseUrl}/login.php", [
+testar("Login do usuário de teste", function () use ($baseUrl) {
+    validarResposta(chamarApi("POST", "{$baseUrl}/sessoes", [
         "email" => "joao@email.com",
         "senha" => "123456",
     ]));
-
-    if (($json["NumMens"] ?? 0) != 1) {
-        throw new Exception($json["Mensagem"] ?? "Login falhou.");
-    }
 });

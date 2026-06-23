@@ -1,8 +1,9 @@
 <?php
 
+// Carrega o Controller responsável pelas tentativas.
 require_once __DIR__ . "/../app/Controllers/TentativaController.php";
 
-// Salva a nota final do quiz respondido pelo usuario.
+// POST cria um novo registro de tentativa.
 return [
-    "POST /tentativa" => [TentativaController::class, "criar"],
+    "POST /tentativas" => [TentativaController::class, "criar"],
 ];

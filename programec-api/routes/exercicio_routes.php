@@ -1,8 +1,12 @@
 <?php
 
+// Carrega o Controller responsável pelos exercícios.
 require_once __DIR__ . "/../app/Controllers/ExercicioController.php";
 
-// Lista os exercicios de uma materia recebendo materia_id por GET.
+// Exercícios aparecem como um recurso pertencente a uma matéria.
 return [
-    "GET /exercicios" => [ExercicioController::class, "listarPorMateria"],
+    "GET /materias/{materiaId}/exercicios" => [
+        ExercicioController::class,
+        "listarPorMateria",
+    ],
 ];

@@ -5,41 +5,27 @@ require_once __DIR__ . "/../Repositories/TentativaRepository.php";
 
 class TentativaController
 {
-    // Cria o repository com uma conexao ao banco.
     private function repository(): TentativaRepository
     {
         $database = new Database();
         return new TentativaRepository($database->getConnection());
     }
 
-    // Atende a rota POST /tentativa.
+    // POST /tentativas
     public function criar(): void
     {
         try {
-            // Le os dados enviados pelo app depois do quiz.
-            $usuarioId = $_POST["usuario_id"] ?? "";
-            $materiaId = $_POST["materia_id"] ?? "";
-            $nota = $_POST["nota"] ?? "";
+            $dados = Request::body();
 
-            if (empty($usuarioId) || empty($materiaId) || $nota === "") {
-                Response::json(0, "Informe usuario_id, materia_id e nota.");
-                return;
-            }
+            $this->repository()->criar(
+                (int) $dados["usuario_id"],
+                (int) $dados["materia_id"],
+                (float) $dados["nota"]
+            );
 
-            if (!is_numeric($usuarioId) || !is_numeric($materiaId) || !is_numeric($nota)) {
-                Response::json(0, "Os valores de usuario_id, materia_id e nota devem ser numericos.");
-                return;
-            }
-
-            // Garante que a nota fique entre 0 e 10.
-            $nota = max(0, min(10, (float) $nota));
-
-            // Salva a tentativa no banco.
-            $this->repository()->criar((int) $usuarioId, (int) $materiaId, $nota);
-
-            Response::json(1, "Resultado salvo com sucesso!");
+            Response::json(1, "Resultado salvo com sucesso!", null, 201);
         } catch (Exception $e) {
-            Response::json(0, "Erro interno: " . $e->getMessage());
+            Response::json(0, "Erro ao salvar tentativa.", null, 500);
         }
     }
 }

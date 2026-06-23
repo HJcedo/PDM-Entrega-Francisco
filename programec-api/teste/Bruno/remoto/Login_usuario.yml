@@ -5,14 +5,14 @@ info:
 
 http:
   method: POST
-  url: http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints/login.php
+  url: http://200.19.1.19/20222GR.ADS0005/programec-api/public/sessoes
   body:
-    type: form-urlencoded
-    data:
-      - name: email
-        value: joao@email.com
-      - name: senha
-        value: "123456"
+    type: json
+    data: |-
+      {
+        "email": "joao@email.com",
+        "senha": "123456"
+      }
   auth: inherit
 
 settings:

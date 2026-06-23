@@ -2,89 +2,73 @@
 
 class UsuarioRepository
 {
-    // Recebe a conexao PDO que veio de Database/Banco.
     public function __construct(private PDO $pdo)
     {
     }
 
-    // Busca um usuario pelo e-mail para login.
+    // Busca o usuário usado no login.
     public function buscarPorEmail(string $email): ?array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT id, nome, email, senha, avatar FROM USUARIO WHERE email = :email"
+            "SELECT id, nome, email, senha, avatar
+             FROM USUARIO
+             WHERE email = :email"
         );
-        $stmt->bindValue(":email", $email);
-        $stmt->execute();
+        $stmt->execute(["email" => $email]);
 
-        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $usuario ?: null;
+        return $stmt->fetch() ?: null;
     }
 
-    // Busca os dados publicos do usuario pelo id.
+    // Busca os dados públicos do perfil.
     public function buscarPorId(int $id): ?array
     {
         $stmt = $this->pdo->prepare(
-            "SELECT id, nome, email, avatar FROM USUARIO WHERE id = :id"
+            "SELECT id, nome, email, avatar
+             FROM USUARIO
+             WHERE id = :id"
         );
-        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute(["id" => $id]);
 
-        $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $usuario ?: null;
+        return $stmt->fetch() ?: null;
     }
 
-    // Verifica se ja existe usuario com este e-mail.
-    public function emailExiste(string $email): bool
-    {
-        $stmt = $this->pdo->prepare("SELECT id FROM USUARIO WHERE email = :email");
-        $stmt->bindValue(":email", $email);
-        $stmt->execute();
-
-        return (bool) $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    // Cadastra um novo usuario com senha ja criptografada.
-    public function criar(string $nome, string $email, string $senhaHash): void
+    // Cadastra um usuário com a senha já transformada em hash.
+    public function criar(string $nome, string $email, string $senha): void
     {
         $stmt = $this->pdo->prepare(
-            "INSERT INTO USUARIO (nome, email, senha) VALUES (:nome, :email, :senha)"
+            "INSERT INTO USUARIO (nome, email, senha)
+             VALUES (:nome, :email, :senha)"
         );
-        $stmt->bindValue(":nome", $nome);
-        $stmt->bindValue(":email", $email);
-        $stmt->bindValue(":senha", $senhaHash);
-        $stmt->execute();
+        $stmt->execute([
+            "nome" => $nome,
+            "email" => $email,
+            "senha" => $senha,
+        ]);
     }
 
-    // Atualiza nome e/ou avatar, dependendo do que foi enviado.
-    public function atualizar(int $id, ?string $nome, ?string $avatar): void
+    // A tela de perfil altera somente o avatar.
+    public function atualizarAvatar(int $id, string $avatar): void
     {
-        $campos = [];
-        $params = [":id" => $id];
-
-        if (!empty($nome)) {
-            $campos[] = "nome = :nome";
-            $params[":nome"] = $nome;
-        }
-
-        if (!empty($avatar)) {
-            $campos[] = "avatar = :avatar";
-            $params[":avatar"] = $avatar;
-        }
-
-        $sql = "UPDATE USUARIO SET " . implode(", ", $campos) . " WHERE id = :id";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
+        $stmt = $this->pdo->prepare(
+            "UPDATE USUARIO SET avatar = :avatar WHERE id = :id"
+        );
+        $stmt->execute([
+            "avatar" => $avatar,
+            "id" => $id,
+        ]);
     }
 
-    // Remove primeiro as tentativas e depois o usuario.
+    // Remove as tentativas e depois a conta.
     public function deletar(int $id): void
     {
-        $stmt = $this->pdo->prepare("DELETE FROM TENTATIVA WHERE usuario_id = :id");
-        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt = $this->pdo->prepare(
+            "DELETE FROM TENTATIVA WHERE usuario_id = :id"
+        );
+        $stmt->execute(["id" => $id]);
 
-        $stmt = $this->pdo->prepare("DELETE FROM USUARIO WHERE id = :id");
-        $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt = $this->pdo->prepare(
+            "DELETE FROM USUARIO WHERE id = :id"
+        );
+        $stmt->execute(["id" => $id]);
     }
 }

@@ -2,12 +2,11 @@
 
 class ExercicioRepository
 {
-    // Recebe a conexao PDO que veio de Database/Banco.
     public function __construct(private PDO $pdo)
     {
     }
 
-    // Busca os exercicios de uma materia especifica.
+    // Retorna os exercícios da matéria escolhida.
     public function listarPorMateria(int $materiaId): array
     {
         $stmt = $this->pdo->prepare(
@@ -16,15 +15,17 @@ class ExercicioRepository
              WHERE materia_id = :materia_id
              ORDER BY id"
         );
-        $stmt->bindValue(":materia_id", $materiaId, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute(["materia_id" => $materiaId]);
 
-        $exercicios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $exercicios = $stmt->fetchAll();
 
-        // Converte opcoes_json de texto JSON para array PHP.
+        // O PostgreSQL guarda as opções como texto JSON.
         foreach ($exercicios as &$exercicio) {
-            if (!empty($exercicio["opcoes_json"])) {
-                $exercicio["opcoes_json"] = json_decode($exercicio["opcoes_json"], true);
+            if ($exercicio["opcoes_json"]) {
+                $exercicio["opcoes_json"] = json_decode(
+                    $exercicio["opcoes_json"],
+                    true
+                );
             }
         }
 

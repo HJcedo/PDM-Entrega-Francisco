@@ -5,11 +5,7 @@ info:
 
 http:
   method: GET
-  url: http://localhost/programec-api/endpoints/perfil.php?id=2
-  params:
-    - name: id
-      value: "2"
-      type: query
+  url: http://localhost/programec-api/public/usuarios/2
   auth: inherit
 
 settings:

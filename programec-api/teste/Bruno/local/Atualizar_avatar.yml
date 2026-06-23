@@ -4,17 +4,14 @@ info:
   seq: 4
 
 http:
-  method: POST
-  url: http://localhost/programec-api/endpoints/atualizar_usuario.php
+  method: PATCH
+  url: http://localhost/programec-api/public/usuarios/1
   body:
-    type: form-urlencoded
-    data:
-      - name: id
-        value: "1"
-      - name: nome
-        value: Joao Atualizado
-      - name: avatar
-        value: robo
+    type: json
+    data: |-
+      {
+        "avatar": "🤖"
+      }
   auth: inherit
 
 settings:
