@@ -1,5 +1,6 @@
-<?php
+﻿<?php
 
+// Padroniza todas as respostas JSON da API.
 class Response
 {
     // Static permite chamar Response::json() sem criar um objeto Response.
@@ -9,30 +10,30 @@ class Response
         $dados = null,
         int $status = 200
     ): void {
-        // Define o status HTTP. Se não for informado, usa 200.
+        // Define o status HTTP. Se nao for informado, usa 200 OK.
         http_response_code($status);
 
-        // Começa com zero porque $dados pode ser nulo ou uma lista vazia.
+        // Conta quantos registros voltaram em "dados".
         $registros = 0;
 
         if (is_array($dados)) {
-            // Distingue uma lista [0, 1] de um registro ["id" => 1].
+            // Verifica se $dados e uma lista ou um unico registro associativo.
             $isList = empty($dados)
                 || array_keys($dados) === range(0, count($dados) - 1);
 
-            // Uma lista conta seus itens; um objeto associativo conta como um.
+            // Lista conta itens; registro unico conta como 1.
             $registros = $isList ? count($dados) : 1;
         } elseif ($dados !== null) {
-            // Qualquer outro valor não nulo representa um registro.
+            // Qualquer valor nao nulo conta como 1 registro.
             $registros = 1;
         }
 
-        // Monta o formato padronizado usado por toda a aplicação.
+        // Envia o JSON final para o Flutter.
         echo json_encode([
             "NumMens" => $numMens,
             "Mensagem" => $mensagem,
             "registros" => $registros,
             "dados" => $dados,
-        ], JSON_UNESCAPED_UNICODE); // Mantém acentos e emojis legíveis.
+        ], JSON_UNESCAPED_UNICODE); // Mantem acentos e emojis no JSON.
     }
 }

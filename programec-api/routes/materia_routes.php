@@ -1,9 +1,9 @@
-<?php
+﻿<?php
 
-// Carrega o Controller responsável pelas matérias.
+// Carrega o Controller das materias.
 require_once __DIR__ . "/../app/Controllers/MateriaController.php";
 
-// Liga a listagem do recurso matérias ao método listar().
 return [
+    // Lista todas as materias: GET /materias.
     "GET /materias" => [MateriaController::class, "listar"],
 ];

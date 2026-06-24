@@ -1,10 +1,12 @@
-<?php
+﻿<?php
 
 require_once __DIR__ . "/../../core/bootstrap.php";
 require_once __DIR__ . "/../Repositories/MateriaRepository.php";
 
+// Recebe chamadas relacionadas a materias.
 class MateriaController
 {
+    // Cria o Repository ja conectado ao banco.
     private function repository(): MateriaRepository
     {
         $database = new Database();
@@ -15,10 +17,14 @@ class MateriaController
     public function listar(): void
     {
         try {
+            // Busca as materias no banco pelo Repository.
             $materias = $this->repository()->listar();
-            Response::json(1, "Matérias listadas com sucesso.", $materias);
+
+            // Devolve as materias em JSON para o Flutter.
+            Response::json(1, "Materias listadas com sucesso.", $materias);
         } catch (Exception $e) {
-            Response::json(0, "Erro ao listar matérias.", null, 500);
+            // Se algo der errado, devolve erro padronizado.
+            Response::json(0, "Erro ao listar materias.", null, 500);
         }
     }
 }
