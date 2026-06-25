@@ -4,115 +4,112 @@ import '../models/usuario.dart';
 import '../models/materia.dart';
 import '../models/exercicio.dart';
 
-// URL base da API — trocar pelo IP do servidor da faculdade na fase de migração
 const String _baseUrl =
-    'http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints';
+    'http://200.19.1.19/20222GR.ADS0005/programec-api/public';
+
+const Map<String, String> _jsonHeaders = {
+  'Content-Type': 'application/json; charset=UTF-8',
+};
 
 class ApiService {
-  // ── Cadastrar novo usuário ──────────────────────────────────────────────────
-  // Retorna null em caso de sucesso, ou uma mensagem de erro
+  // Transforma a resposta JSON em um Map do Dart.
+  static dynamic _json(http.Response response) {
+    return jsonDecode(utf8.decode(response.bodyBytes));
+  }
+
   static Future<String?> cadastrar(
     String nome,
     String email,
     String senha,
   ) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/cadastro.php'),
-      body: {'nome': nome, 'email': email, 'senha': senha},
+      Uri.parse('$_baseUrl/usuarios'),
+      headers: _jsonHeaders,
+      body: jsonEncode({'nome': nome, 'email': email, 'senha': senha}),
     );
-    final json = jsonDecode(response.body);
-    if (json['NumMens'] == 1) return null;
-    return json['Mensagem'];
+
+    final json = _json(response);
+    return json['NumMens'] == 1 ? null : json['Mensagem'];
   }
 
-  // ── Login ──────────────────────────────────────────────────────────────────
-  // Retorna o Usuario logado, ou lança uma exceção com a mensagem de erro
   static Future<Usuario> login(String email, String senha) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/login.php'),
-      body: {'email': email, 'senha': senha},
+      Uri.parse('$_baseUrl/sessoes'),
+      headers: _jsonHeaders,
+      body: jsonEncode({'email': email, 'senha': senha}),
     );
-    final json = jsonDecode(response.body);
-    if (json['NumMens'] == 1) return Usuario.fromJson(json['dados']);
+
+    final json = _json(response);
+
+    if (json['NumMens'] == 1) {
+      return Usuario.fromJson(json['dados']);
+    }
+
     throw Exception(json['Mensagem']);
   }
 
-  // ── Buscar perfil ──────────────────────────────────────────────────────────
   static Future<Usuario> buscarPerfil(int id) async {
-    final response = await http.get(Uri.parse('$_baseUrl/perfil.php?id=$id'));
-    final json = jsonDecode(response.body);
-    if (json['NumMens'] == 1) return Usuario.fromJson(json['dados']);
-    throw Exception(json['Mensagem']);
+    final response = await http.get(Uri.parse('$_baseUrl/usuarios/$id'));
+    final json = _json(response);
+    return Usuario.fromJson(json['dados']);
   }
 
-  // ── Atualizar nome e/ou avatar ─────────────────────────────────────────────
   static Future<String?> atualizarUsuario(
     int id, {
-    String? nome,
-    String? avatar,
+    required String avatar,
   }) async {
-    final body = <String, String>{'id': id.toString()};
-    if (nome != null) body['nome'] = nome;
-    if (avatar != null) body['avatar'] = avatar;
-
-    final response = await http.post(
-      Uri.parse('$_baseUrl/atualizar_usuario.php'),
-      body: body,
+    final response = await http.patch(
+      Uri.parse('$_baseUrl/usuarios/$id'),
+      headers: _jsonHeaders,
+      body: jsonEncode({'avatar': avatar}),
     );
-    final json = jsonDecode(response.body);
-    if (json['NumMens'] == 1) return null;
-    return json['Mensagem'];
+
+    final json = _json(response);
+    return json['NumMens'] == 1 ? null : json['Mensagem'];
   }
 
-  // Exclui o usuário usando o endpoint já existente no servidor.
   static Future<String?> deletarUsuario(int id) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/deletar_usuario.php'),
-      body: {'id': id.toString()},
-    );
-    final json = jsonDecode(response.body);
-    if (json['NumMens'] == 1) return null;
-    return json['Mensagem'];
+    final response = await http.delete(Uri.parse('$_baseUrl/usuarios/$id'));
+    final json = _json(response);
+    return json['NumMens'] == 1 ? null : json['Mensagem'];
   }
 
-  // ── Listar matérias ────────────────────────────────────────────────────────
   static Future<List<Materia>> listarMaterias() async {
-    final response = await http.get(Uri.parse('$_baseUrl/materias.php'));
-    final json = jsonDecode(response.body);
-    if (json['NumMens'] == 1) {
-      return (json['dados'] as List).map((m) => Materia.fromJson(m)).toList();
-    }
-    throw Exception(json['Mensagem']);
+    final response = await http.get(Uri.parse('$_baseUrl/materias'));
+    final json = _json(response);
+
+    return (json['dados'] as List)
+        .map((materia) => Materia.fromJson(materia))
+        .toList();
   }
 
-  // ── Listar exercícios de uma matéria ───────────────────────────────────────
   static Future<List<Exercicio>> listarExercicios(int materiaId) async {
     final response = await http.get(
-      Uri.parse('$_baseUrl/exercicios.php?materia_id=$materiaId'),
+      Uri.parse('$_baseUrl/materias/$materiaId/exercicios'),
     );
-    final json = jsonDecode(response.body);
-    if (json['NumMens'] == 1) {
-      return (json['dados'] as List).map((e) => Exercicio.fromJson(e)).toList();
-    }
-    throw Exception(json['Mensagem']);
+    final json = _json(response);
+
+    return (json['dados'] as List)
+        .map((exercicio) => Exercicio.fromJson(exercicio))
+        .toList();
   }
 
-  // ── Salvar resultado do quiz ───────────────────────────────────────────────
   static Future<String?> salvarTentativa(
     int usuarioId,
     int materiaId,
     double nota,
   ) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/tentativa.php'),
-      body: {
-        'usuario_id': usuarioId.toString(),
-        'materia_id': materiaId.toString(),
-        'nota': nota.toString(),
-      },
+      Uri.parse('$_baseUrl/tentativas'),
+      headers: _jsonHeaders,
+      body: jsonEncode({
+        'usuario_id': usuarioId,
+        'materia_id': materiaId,
+        'nota': nota,
+      }),
     );
-    final json = jsonDecode(response.body);
-    if (json['NumMens'] == 1) return null;
-    return json['Mensagem'];
+
+    final json = _json(response);
+    return json['NumMens'] == 1 ? null : json['Mensagem'];
   }
 }

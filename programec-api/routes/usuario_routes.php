@@ -1,12 +1,22 @@
 <?php
 
+// Carrega a classe que executará as ações destas rotas.
 require_once __DIR__ . "/../app/Controllers/UsuarioController.php";
 
-// Rotas relacionadas ao usuario: cadastro, login, perfil e exclusao.
+// A chave contém método e caminho; o valor indica Controller e ação.
 return [
-    "POST /cadastro" => [UsuarioController::class, "cadastro"],
-    "POST /login" => [UsuarioController::class, "login"],
-    "GET /perfil" => [UsuarioController::class, "perfil"],
-    "POST /atualizar-usuario" => [UsuarioController::class, "atualizar"],
-    "POST /deletar-usuario" => [UsuarioController::class, "deletar"],
+    // Cria um novo recurso usuário.
+    "POST /usuarios" => [UsuarioController::class, "criar"],
+
+    // {id} é um parâmetro dinâmico extraído pelo roteador.
+    "GET /usuarios/{id}" => [UsuarioController::class, "buscar"],
+
+    // PATCH altera apenas os campos enviados.
+    "PATCH /usuarios/{id}" => [UsuarioController::class, "atualizar"],
+
+    // DELETE remove o recurso identificado pelo id.
+    "DELETE /usuarios/{id}" => [UsuarioController::class, "deletar"],
+
+    // Criar uma sessão representa realizar o login.
+    "POST /sessoes" => [UsuarioController::class, "autenticar"],
 ];

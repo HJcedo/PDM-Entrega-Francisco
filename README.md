@@ -36,13 +36,14 @@ O aluno pode criar uma conta, entrar no aplicativo, escolher uma matéria, respo
 ```text
 Flutter
   -> ApiService
-  -> endpoints PHP de compatibilidade
+  -> rotas REST em public/
   -> Controllers
   -> Repositories
   -> PostgreSQL do IFsul
 ```
 
-O Flutter ainda consome os arquivos em `programec-api/endpoints/`. Esses arquivos são entradas de compatibilidade e encaminham as requisições para a arquitetura modular do backend.
+O Flutter consome recursos REST com corpo JSON. O roteador em
+`programec-api/public/index.php` reconhece métodos HTTP e parâmetros de caminho.
 
 ## Diagramas
 
@@ -84,7 +85,6 @@ PDM-Entrega-Francisco/
 |   |   `-- Repositories/
 |   |-- config/
 |   |-- core/
-|   |-- endpoints/
 |   |-- public/
 |   |-- routes/
 |   |-- teste/
@@ -158,7 +158,7 @@ app_flutter/lib/services/api_service.dart
 O ambiente atual aponta para:
 
 ```text
-http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints
+http://200.19.1.19/20222GR.ADS0005/programec-api/public
 ```
 
 ## Executar a API localmente
@@ -172,8 +172,7 @@ C:\xampp\htdocs\programec-api
 Inicie o Apache e teste:
 
 ```text
-http://localhost/programec-api/endpoints/materias.php
-http://localhost/programec-api/public/index.php/materias
+http://localhost/programec-api/public/materias
 ```
 
 A conexão com o PostgreSQL do IFsul depende da disponibilidade da rede do ambiente acadêmico.
@@ -194,4 +193,4 @@ Mudanças exclusivamente no Flutter não exigem upload pelo WinSCP.
 
 ## Credenciais
 
-As credenciais acadêmicas do PostgreSQL estão em `programec-api/config/Banco.php` para atender ao formato atual do trabalho. Em uma aplicação de produção, essas informações deveriam ser fornecidas por variáveis de ambiente e nunca versionadas no código.
+As credenciais acadêmicas do PostgreSQL estão em `programec-api/config/Banco.php`, arquivo baseado no modelo fornecido pelo professor. Em uma aplicação de produção, essas informações deveriam ser fornecidas por variáveis de ambiente e nunca versionadas no código.

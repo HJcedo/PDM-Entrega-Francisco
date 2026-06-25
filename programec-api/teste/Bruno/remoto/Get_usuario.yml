@@ -5,11 +5,7 @@ info:
 
 http:
   method: GET
-  url: http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints/perfil.php?id=2
-  params:
-    - name: id
-      value: "2"
-      type: query
+  url: http://200.19.1.19/20222GR.ADS0005/programec-api/public/usuarios/2
   auth: inherit
 
 settings:

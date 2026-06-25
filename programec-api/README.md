@@ -1,31 +1,31 @@
-# Programe.C — API
+# Programe.C — API REST
 
-API REST em PHP puro utilizada pelo aplicativo Programe.C. O backend segue a arquitetura modular solicitada na disciplina e se conecta ao PostgreSQL do IFsul por meio de PDO.
+API em PHP puro utilizada pelo aplicativo Programe.C. O backend segue uma
+arquitetura modular e acessa o PostgreSQL do IFsul por meio de PDO.
 
-## Arquitetura
+## Fluxo
 
 ```text
 Requisição HTTP
-  -> endpoint de compatibilidade ou public/index.php
-  -> rota
+  -> public/index.php
+  -> rota REST
   -> Controller
   -> Repository
   -> PostgreSQL do IFsul
-  -> Response JSON
+  -> resposta JSON
 ```
 
 ```mermaid
 flowchart LR
     FLUTTER["Flutter / ApiService"]
-    ENDPOINTS["Endpoints de compatibilidade"]
-    ROUTES["Rotas modulares"]
+    ROUTER["public/index.php"]
+    ROUTES["Rotas REST"]
     CONTROLLERS["Controllers"]
     REPOSITORIES["Repositories"]
     POSTGRES[("PostgreSQL do IFsul")]
 
-    FLUTTER --> ENDPOINTS
-    FLUTTER -. "rotas alternativas" .-> ROUTES
-    ENDPOINTS --> CONTROLLERS
+    FLUTTER --> ROUTER
+    ROUTER --> ROUTES
     ROUTES --> CONTROLLERS
     CONTROLLERS --> REPOSITORIES
     REPOSITORIES --> POSTGRES
@@ -37,82 +37,81 @@ flowchart LR
 programec-api/
 |-- app/
 |   |-- Controllers/
-|   |   |-- ExercicioController.php
-|   |   |-- MateriaController.php
-|   |   |-- TentativaController.php
-|   |   `-- UsuarioController.php
 |   `-- Repositories/
-|       |-- ExercicioRepository.php
-|       |-- MateriaRepository.php
-|       |-- TentativaRepository.php
-|       `-- UsuarioRepository.php
 |-- config/
-|   |-- Banco.php
-|   `-- Database.php
 |-- core/
 |   |-- bootstrap.php
+|   |-- Request.php
 |   `-- Response.php
-|-- endpoints/
 |-- public/
 |   |-- .htaccess
 |   `-- index.php
 |-- routes/
-|   |-- exercicio_routes.php
-|   |-- materia_routes.php
-|   |-- tentativa_routes.php
-|   `-- usuario_routes.php
 |-- teste/
-|   |-- Bruno/
-|   `-- teste_conexao/
 `-- README.md
 ```
 
-## Responsabilidades
+- `public/index.php`: ponto de entrada e reconhecimento das rotas.
+- `routes`: associa método, caminho, Controller e ação.
+- `Controllers`: validam entradas e coordenam as operações.
+- `Repositories`: executam SQL no PostgreSQL.
+- `Request.php`: interpreta o corpo JSON.
+- `Response.php`: produz o formato JSON padronizado.
 
-- `Controllers`: validam entradas e coordenam cada operação.
-- `Repositories`: executam consultas e alterações no PostgreSQL.
-- `config`: abre e fornece a conexão PDO.
-- `core`: centraliza dependências, headers e respostas JSON.
-- `routes`: associa método e caminho ao Controller correto.
-- `public/index.php`: entrada das rotas modulares.
-- `endpoints`: entradas de compatibilidade usadas atualmente pelo Flutter.
-- `teste`: coleções e scripts de teste local e remoto.
+## URL base
 
-## Endpoints usados pelo Flutter
-
-O aplicativo atual consome:
+Remota:
 
 ```text
-http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints
+http://200.19.1.19/20222GR.ADS0005/programec-api/public
 ```
 
-| Método | Endpoint | Função |
+Local:
+
+```text
+http://localhost/programec-api/public
+```
+
+## Recursos REST
+
+| Método | Rota | Resultado |
 | --- | --- | --- |
-| POST | `/endpoints/cadastro.php` | Cadastra usuário com senha criptografada. |
-| POST | `/endpoints/login.php` | Autentica usuário. |
-| GET | `/endpoints/perfil.php?id=X` | Busca perfil. |
-| POST | `/endpoints/atualizar_usuario.php` | Atualiza nome ou avatar. |
-| POST | `/endpoints/deletar_usuario.php` | Exclui usuário e suas tentativas. |
-| GET | `/endpoints/materias.php` | Lista matérias. |
-| GET | `/endpoints/exercicios.php?materia_id=X` | Lista exercícios de uma matéria. |
-| POST | `/endpoints/tentativa.php` | Salva a nota de uma tentativa. |
+| POST | `/usuarios` | Cria uma conta. |
+| GET | `/usuarios/{id}` | Consulta um usuário. |
+| PATCH | `/usuarios/{id}` | Altera o avatar. |
+| DELETE | `/usuarios/{id}` | Exclui usuário e tentativas. |
+| POST | `/sessoes` | Autentica e cria uma sessão lógica. |
+| GET | `/materias` | Lista matérias. |
+| GET | `/materias/{id}/exercicios` | Lista exercícios da matéria. |
+| POST | `/tentativas` | Registra o resultado de um quiz. |
 
-Esses arquivos não possuem a regra de negócio completa. Eles carregam e executam os Controllers da estrutura modular.
+Corpos de `POST` e `PATCH` são enviados como `application/json`.
 
-## Rotas modulares
+Exemplo:
 
-| Método | Rota | Função |
-| --- | --- | --- |
-| POST | `/public/index.php/cadastro` | Cadastra usuário. |
-| POST | `/public/index.php/login` | Autentica usuário. |
-| GET | `/public/index.php/perfil?id=X` | Busca perfil. |
-| POST | `/public/index.php/atualizar-usuario` | Atualiza perfil. |
-| POST | `/public/index.php/deletar-usuario` | Exclui usuário. |
-| GET | `/public/index.php/materias` | Lista matérias. |
-| GET | `/public/index.php/exercicios?materia_id=X` | Lista exercícios. |
-| POST | `/public/index.php/tentativa` | Salva tentativa. |
+```http
+PATCH /usuarios/5
+Content-Type: application/json
 
-## Resposta padrão
+{
+  "avatar": "🐧"
+}
+```
+
+## Códigos HTTP
+
+| Código | Uso |
+| --- | --- |
+| `200` | Consulta, autenticação, alteração ou exclusão concluída. |
+| `201` | Usuário ou tentativa criado. |
+| `204` | Resposta à requisição CORS `OPTIONS`. |
+| `401` | Credenciais incorretas. |
+| `404` | Rota não encontrada. |
+| `500` | Erro ao executar uma operação no servidor. |
+
+## Resposta JSON
+
+O formato anterior foi mantido para compatibilidade com os models e telas:
 
 ```json
 {
@@ -123,79 +122,50 @@ Esses arquivos não possuem a regra de negócio completa. Eles carregam e execut
 }
 ```
 
-- `NumMens = 1`: operação concluída.
-- `NumMens = 0`: erro ou validação recusada.
-- `registros`: quantidade de registros retornados.
-- `dados`: objeto, lista ou `null`.
-
-## Banco do IFsul
-
-Configuração acadêmica atual:
-
-```text
-host: 192.168.20.18
-porta: 5432
-banco: franciscozanela
-usuario: franciscozanela
-```
-
-As credenciais são definidas em `config/Banco.php`.
-
-Tabelas utilizadas:
-
-```text
-usuario
-materia
-exercicio
-tentativa
-```
-
-Usuário utilizado nos testes:
-
-```text
-email: joao@email.com
-senha: 123456
-```
+Para manter o projeto simples, o aplicativo envia dados já validados pelas
+telas. O backend conserva apenas as regras essenciais e usa `NumMens` para
+informar sucesso ou falha.
 
 ## Executar localmente
 
-Copie a pasta para:
+Copie `programec-api/` para:
 
 ```text
 C:\xampp\htdocs\programec-api
 ```
 
-Inicie o Apache e teste:
+Inicie o Apache e acesse:
 
 ```text
-http://localhost/programec-api/endpoints/materias.php
-http://localhost/programec-api/public/index.php/materias
+http://localhost/programec-api/public/materias
 ```
 
-O teste local ainda depende da conectividade com o PostgreSQL interno do IFsul.
+O arquivo `public/.htaccess` precisa estar ativo e o Apache precisa permitir
+`mod_rewrite`.
 
-## Testes
+## Publicação pelo WinSCP
 
-- `teste/Bruno/local/`: requisições para o ambiente local.
-- `teste/Bruno/remoto/`: requisições para o servidor publicado.
-- `teste/teste_conexao/teste-IF.php`: testa a API publicada no IFsul.
-- `teste/teste_conexao/teste-fora-do-campus.php`: testa a API local.
+O servidor remoto não é atualizado pelo Git. Para esta versão REST, envie:
 
-## Publicação com WinSCP
+```text
+app/Controllers/ExercicioController.php
+app/Controllers/MateriaController.php
+app/Controllers/TentativaController.php
+app/Controllers/UsuarioController.php
+core/Request.php
+core/bootstrap.php
+config/Database.php
+config/Banco.php
+public/.htaccess
+public/index.php
+routes/exercicio_routes.php
+routes/tentativa_routes.php
+routes/usuario_routes.php
+app/Repositories/UsuarioRepository.php
+app/Repositories/MateriaRepository.php
+app/Repositories/ExercicioRepository.php
+app/Repositories/TentativaRepository.php
+```
 
-O servidor remoto não é atualizado automaticamente pelo Git.
-
-Quando um arquivo PHP for alterado ou criado:
-
-1. anote todos os arquivos modificados;
-2. conecte-se ao servidor do IFsul pelo WinSCP;
-3. envie cada arquivo para o mesmo caminho relativo dentro de `programec-api/`;
-4. preserve a estrutura de `app`, `config`, `core`, `endpoints`, `public` e `routes`;
-5. teste primeiro o endpoint remoto diretamente;
-6. depois teste o fluxo no Flutter.
-
-Se apenas o frontend Flutter for modificado, nenhum upload da API é necessário.
-
-## Segurança
-
-As credenciais permanecem no código por se tratar do ambiente acadêmico atual. Em produção, devem ser substituídas por variáveis de ambiente e segredos fora do repositório.
+Os repositories e o banco não mudaram. Após o upload, teste primeiro
+`GET /public/materias` e somente depois execute o Flutter.

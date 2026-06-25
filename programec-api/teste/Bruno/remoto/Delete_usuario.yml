@@ -4,13 +4,8 @@ info:
   seq: 5
 
 http:
-  method: POST
-  url: http://200.19.1.19/20222GR.ADS0005/programec-api/endpoints/deletar_usuario.php
-  body:
-    type: form-urlencoded
-    data:
-      - name: id
-        value: "1"
+  method: DELETE
+  url: http://200.19.1.19/20222GR.ADS0005/programec-api/public/usuarios/1
   auth: inherit
 
 settings:
