@@ -2,13 +2,11 @@
 
 require_once __DIR__ . "/../core/bootstrap.php";
 
-// Responde à consulta prévia feita pelo navegador.
 if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
     http_response_code(204);
     exit;
 }
 
-// Reúne todas as rotas da aplicação.
 $rotas = array_merge(
     require __DIR__ . "/../routes/usuario_routes.php",
     require __DIR__ . "/../routes/materia_routes.php",
@@ -21,33 +19,38 @@ $caminho = $_SERVER["PATH_INFO"] ?? "/";
 $partesUrl = explode("/", trim($caminho, "/"));
 
 foreach ($rotas as $rota => [$classe, $acao]) {
-    // Separa "GET /usuarios/{id}" em método e caminho.
     [$metodoRota, $caminhoRota] = explode(" ", $rota, 2);
 
     if ($metodo !== $metodoRota) {
         continue;
     }
 
-    $partesRota = explode("/", trim($caminhoRota, "/"));
+    $parametros = [];
+    $rotaEncontrada = false;
 
-    if (count($partesUrl) !== count($partesRota)) {
-        continue;
+    if ($caminho === $caminhoRota) {
+        $rotaEncontrada = true;
     }
 
-    $parametros = [];
-    $rotaEncontrada = true;
+    if (
+        !$rotaEncontrada &&
+        $caminhoRota === "/usuarios/{id}" &&
+        count($partesUrl) === 2 &&
+        $partesUrl[0] === "usuarios"
+    ) {
+        $parametros[] = $partesUrl[1];
+        $rotaEncontrada = true;
+    }
 
-    foreach ($partesRota as $indice => $parteRota) {
-        // Uma parte entre chaves é um parâmetro, como {id}.
-        if ($parteRota[0] === "{") {
-            $parametros[] = $partesUrl[$indice];
-            continue;
-        }
-
-        if ($parteRota !== $partesUrl[$indice]) {
-            $rotaEncontrada = false;
-            break;
-        }
+    if (
+        !$rotaEncontrada &&
+        $caminhoRota === "/materias/{materiaId}/exercicios" &&
+        count($partesUrl) === 3 &&
+        $partesUrl[0] === "materias" &&
+        $partesUrl[2] === "exercicios"
+    ) {
+        $parametros[] = $partesUrl[1];
+        $rotaEncontrada = true;
     }
 
     if ($rotaEncontrada) {
@@ -57,4 +60,4 @@ foreach ($rotas as $rota => [$classe, $acao]) {
     }
 }
 
-Response::json(0, "Rota não encontrada.", null, 404);
+Response::json(0, "Rota nao encontrada.", null, 404);
